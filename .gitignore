@@ -1,0 +1,56 @@
+# --- Build directory ---
+build/
+
+# --- CMake build files ---
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+install_manifest.txt
+
+# --- Executables ---
+*.out
+*.exe
+*.out.*
+*.app
+*.bin
+myt
+myt_tests
+
+# --- Editor / OS junk ---
+*.swp
+*.swo
+*.swn
+*~
+.DS_Store
+Thumbs.db
+
+# --- Compilation cache ---
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+*.dylib
+
+# --- Logs and crash reports ---
+*.log
+core
+vgcore.*
+gmon.out
+
+# --- Test-specific ---
+tests/test_results.xml
+tests/*.gcda
+tests/*.gcno
+tests/*.gcov
+
+# --- Catch2 configuration if any generated ---
+catch_amalgamated.hpp
+
+# --- Raylib optional generated assets (if any used) ---
+*.rres
+*.rgl
+*.rlmeta
