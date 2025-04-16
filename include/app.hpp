@@ -7,12 +7,12 @@
 class MytApp {
  public:
   MytApp();
-  ~MytApp();
+
   void run() noexcept;
 
  private:
-  InputHandler m_input_handler;
   Window m_window;
+  InputHandler m_input_handler;
 };
 
 #endif  // !APP_HPP

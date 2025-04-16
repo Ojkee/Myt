@@ -1,7 +1,7 @@
 #include "../include/app.hpp"
 
 int main() {
-  MytApp app = MytApp();
+  MytApp app;
   app.run();
 
   return 0;

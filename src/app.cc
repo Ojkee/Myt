@@ -1,8 +1,6 @@
 #include "../include/app.hpp"
 
-MytApp::MytApp() : m_input_handler(), m_window() {}
-
-MytApp::~MytApp() {}
+MytApp::MytApp() : m_window(), m_input_handler() {}
 
 void MytApp::run() noexcept {
   while (!m_window.should_close()) {

@@ -1,15 +1,16 @@
 #ifndef INPUT_HANDLER_HPP
 #define INPUT_HANDLER_HPP
 
-#include "../model/state.hpp"
+#include "../model/page.hpp"
 
 class InputHandler {
  public:
-  InputHandler();
+  explicit InputHandler();
+
   void check_event();
 
  private:
-  State m_state;
+  Page m_page = Page();
 };
 
 #endif  // !INPUT_HANDLER_HPP
