@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+// TODO: implement Floats
 std::vector<Token> Lexer::tokenize(
     const std::string_view& raw_content) noexcept {
   std::vector<Token> tokens{};
@@ -38,7 +39,9 @@ std::vector<Token> Lexer::tokenize(
     } else if (auto num =
                    Lexer::read_forward_if(raw_content, i, Lexer::is_numeric)) {
       tokens.emplace_back(Token{TokenType::Int, std::string(*num)});
-    };
+    } else {
+      tokens.emplace_back(Token{TokenType::Illegal, "Illegal"});
+    }
 
     i++;
   }
@@ -116,7 +119,7 @@ std::optional<Token> Lexer::get_sign_token(
 
 std::optional<std::string_view> Lexer::read_forward_if(
     const std::string_view& content, std::string_view::iterator& curIt,
-    const std::function<bool(const char&)>& cond) noexcept {
+    const Condition& cond) noexcept {
   auto start = curIt;
   std::size_t len{0};
   while (curIt != content.end() && cond(*curIt)) {

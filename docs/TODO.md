@@ -2,7 +2,8 @@
 
 ## Essential
 
-- [ ] Lexing and parsing cells
+- [x] Lexing cells
+- [ ] Parsing cells
 - [ ] Evaluate cells
 - [ ] Error handling
 - [ ] Few builtins

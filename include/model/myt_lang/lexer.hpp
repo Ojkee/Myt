@@ -8,6 +8,8 @@
 
 #include "token.hpp"
 
+using Condition = std::function<bool(const char&)>;
+
 class Lexer {
  public:
   Lexer();
@@ -27,7 +29,7 @@ class Lexer {
       std::string_view::iterator& cur) noexcept;
   [[nodiscard]] static std::optional<std::string_view> read_forward_if(
       const std::string_view& content, std::string_view::iterator& curIt,
-      const std::function<bool(const char&)>& cond) noexcept;
+      const Condition& cond) noexcept;
   [[nodiscard]] static bool is_keyword(const std::string& ident) noexcept;
   [[nodiscard]] static std::optional<TokenType> get_token_type_keyword(
       const std::string& ident) noexcept;

@@ -11,7 +11,7 @@ void DataCell::set_raw_content(const std::string& value) noexcept {
   m_raw_content = value;
 }
 
-void DataCell::set_eval_content(const std::string& value) noexcept {
+void DataCell::set_eval_content(const MytObject& value) noexcept {
   m_evaluated_content = value;
 }
 

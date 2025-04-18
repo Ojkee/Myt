@@ -5,6 +5,8 @@
 #include <optional>
 #include <string>
 
+#include "myt_lang/myt_object.hpp"
+
 struct CellPos {
   uint8_t row;
   uint8_t col;
@@ -30,11 +32,11 @@ class DataCell {
   void set_raw_content(const std::string& value) noexcept;
 
   [[nodiscard]] bool is_evaluated() const noexcept;
-  void set_eval_content(const std::string& value) noexcept;
+  void set_eval_content(const MytObject& value) noexcept;
 
  private:
   std::string m_raw_content{};
-  std::optional<std::string> m_evaluated_content{};
+  std::optional<MytObject> m_evaluated_content{};
 };
 
 #endif  // !CELL_HPP
