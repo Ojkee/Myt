@@ -17,9 +17,9 @@ struct StringMaker<Expression> {
 }  // namespace Catch
 
 TEST_CASE("Parsing valid inputs") {
-  using input = std::string;
-  using output = std::unique_ptr<Expression>;
-  using testCases = std::vector<std::tuple<input, output>>;
+  using inputType = std::string;
+  using targetType = std::unique_ptr<Expression>;
+  using testCases = std::vector<std::tuple<inputType, targetType>>;
 
   testCases cases;
   cases.emplace_back(
@@ -29,20 +29,19 @@ TEST_CASE("Parsing valid inputs") {
                      std::make_unique<ExpressionLiteral<std::string>>("8 !"));
   cases.emplace_back("= 8", std::make_unique<ExpressionLiteral<int>>(8));
 
-  for (const auto& testCase : cases) {
-    auto tokens = Lexer::tokenize(std::get<0>(testCase));
+  for (const auto& [input, target] : cases) {
+    auto tokens = Lexer::tokenize(input);
     auto parsed = Parser::parse(tokens);
     if (std::holds_alternative<ParsingError>(parsed)) {
       auto err = std::get<ParsingError>(parsed);
       FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
-           std::get<0>(testCase) + "`");
+           input + "`");
     }
     auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
-    // REMEMBER TO FIX (ADDRES COMPERISON)
-    CHECK(**expr == *std::get<1>(testCase));
+    CHECK(**expr == *target);
   }
 }
 

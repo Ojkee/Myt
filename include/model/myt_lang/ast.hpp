@@ -1,8 +1,26 @@
 #ifndef AST_HPP
 #define AST_HPP
 
+#include <cstdint>
+#include <memory>
 #include <string>
-#include <type_traits>
+#include <typeinfo>
+
+#include "token.hpp"
+
+enum class Precendence : uint8_t {
+  Lowest,
+  Equals,
+  LessGreater,
+  Sum,
+  Product,
+  Prefix,
+  Call,
+};
+
+namespace AstUtils {
+[[nodiscard]] Precendence token_to_precendece(const TokenType& type) noexcept;
+}  // namespace AstUtils
 
 struct ParsingError {
   std::string content{};
@@ -35,13 +53,12 @@ class ExpressionLiteral : public Expression {
   }
 
   bool equals(const Expression& other) const override {
-    if (auto otherLiteral =
-            dynamic_cast<const ExpressionLiteral<ExprType>*>(&other)) {
-      return m_value == otherLiteral->m_value;
+    if (typeid(*this).hash_code() != typeid(other).hash_code()) {
+      return false;
     }
-    return false;
-  };
-
+    auto otherLiteral = static_cast<const ExpressionLiteral<ExprType>*>(&other);
+    return m_value == otherLiteral->get_value();
+  }
   ExprType get_value() const noexcept { return m_value; };
 
  private:
@@ -55,16 +72,48 @@ class ExpressionIdentifier : public Expression {
       : Expression(), m_name(value) {};
 
   std::string to_string() const override { return "ident(" + m_name + ")"; }
+
   bool equals(const Expression& other) const override {
-    if (auto otherIdent = dynamic_cast<const ExpressionIdentifier*>(&other)) {
-      return m_name == otherIdent->m_name;
+    if (typeid(*this).hash_code() != typeid(other).hash_code()) {
+      return false;
     }
-    return false;
+    auto otherIdent = static_cast<const ExpressionIdentifier*>(&other);
+    return m_name == otherIdent->get_name();
   }
+
   std::string get_name() const noexcept { return m_name; };
 
  private:
   std::string m_name{};
+};
+
+class ExpressionPrefix : public Expression {
+ public:
+  ExpressionPrefix() = delete;
+  ExpressionPrefix(const Token& prefix_token,
+                   std::unique_ptr<Expression>&& expression)
+      : m_prefix_token(std::move(prefix_token)),
+        m_expression(std::move(expression)) {};
+
+ private:
+  Token m_prefix_token;
+  std::unique_ptr<Expression> m_expression;
+};
+
+class ExpressionInfix : public Expression {
+ public:
+  ExpressionInfix() = delete;
+  ExpressionInfix(std::unique_ptr<Expression>&& lhs,
+                  const Token& operator_token,
+                  std::unique_ptr<Expression>&& rhs)
+      : m_lhs(std::move(lhs)),
+        m_operator_token(operator_token),
+        m_rhs(std::move(rhs)) {};
+
+ private:
+  std::unique_ptr<Expression> m_lhs;
+  Token m_operator_token;
+  std::unique_ptr<Expression> m_rhs;
 };
 
 #endif  // !AST_HPP

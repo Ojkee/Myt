@@ -77,7 +77,7 @@ TEST_CASE("Tokenization") {
        }},
   };
 
-  for (const auto& testCase : cases) {
-    CHECK(Lexer::tokenize(std::get<0>(testCase)) == std::get<1>(testCase));
+  for (const auto& [input, target] : cases) {
+    CHECK(Lexer::tokenize(input) == target);
   }
 }

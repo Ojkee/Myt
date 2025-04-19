@@ -20,7 +20,9 @@ bool Page::cell_exists(const CellPos& pos) const noexcept {
 }
 
 void Page::eval_cell(const CellPos& pos) noexcept {
-  if (!cell_exists(pos)) return;
+  if (!cell_exists(pos)) {
+    return;
+  }
 
   const auto raw_cell_data = m_cells.at(pos).get_raw_content();
   auto tokens = Lexer::tokenize(raw_cell_data);
