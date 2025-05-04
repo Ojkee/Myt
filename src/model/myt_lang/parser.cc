@@ -2,6 +2,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <iostream>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
@@ -16,10 +17,10 @@ ParsingResult Parser::parse(const Tokens& tokens) noexcept {
     const auto concat_content = Parser::concat_token_literals(0, tokens);
     return std::make_unique<ExpressionLiteral<std::string>>(concat_content);
   }
-  std::size_t currentIdx{1};
-  auto expr_result = parse_expression(currentIdx, tokens, Precendence::Lowest);
-  if (tokens.at(currentIdx).type != TokenType::EndOfCell) {
-    const auto rest_concat = Parser::concat_token_literals(currentIdx, tokens);
+  std::size_t current_idx{1};
+  auto expr_result = parse_expression(current_idx, tokens, Precendence::Lowest);
+  if (tokens.at(current_idx).type != TokenType::EndOfCell) {
+    const auto rest_concat = Parser::concat_token_literals(current_idx, tokens);
     return ParsingError{"Couldn't parse: `" + rest_concat + "`"};
   }
   return expr_result;
@@ -28,22 +29,34 @@ ParsingResult Parser::parse(const Tokens& tokens) noexcept {
 ParsingResult Parser::parse_expression(
     std::size_t& token_idx, const Tokens& tokens,
     const Precendence&& precendence) noexcept {
-  auto prefixExpr = parse_prefix_fn(token_idx, tokens);
-  if (std::holds_alternative<ParsingError>(prefixExpr)) {
-    return prefixExpr;
+  auto lhs_result = parse_prefix_fn(token_idx, tokens);
+  if (std::holds_alternative<ParsingError>(lhs_result)) {
+    return lhs_result;
   }
-  // TODO: infix
-  return prefixExpr;
+  while (tokens.at(token_idx).type != TokenType::EndOfCell &&
+         is_precendence_higher(token_idx, tokens, precendence)) {
+    if (!is_in_fns(infix_fns, tokens.at(token_idx).type)) {
+      return lhs_result;
+    }
+    const auto next_token_type = tokens.at(token_idx).type;
+    const auto infix_fn = infix_fns.at(next_token_type);
+    const auto lhs_expression = &std::get<ExpressionPtr>(lhs_result);
+    lhs_result = infix_fn(std::move(*lhs_expression), token_idx, tokens);
+    if (std::holds_alternative<ParsingError>(lhs_result)) {
+      return lhs_result;
+    }
+  }
+  return lhs_result;
 }
 
 ParsingResult Parser::parse_prefix_fn(std::size_t& token_idx,
                                       const Tokens& tokens) noexcept {
-  const auto currentToken = tokens.at(token_idx);
-  if (is_in_fns(prefix_fns, tokens.at(token_idx).type)) {
-    const auto prefixFn = prefix_fns.at(currentToken.type);
+  const auto current_token = tokens.at(token_idx);
+  if (is_in_fns(prefix_fns, current_token.type)) {
+    const auto prefixFn = prefix_fns.at(current_token.type);
     return prefixFn(token_idx, tokens);
   }
-  return ParsingError{"Prefix expression for: `" + currentToken.literal +
+  return ParsingError{"Prefix expression for: `" + current_token.literal +
                       "` not implemented"};
 }
 
@@ -60,9 +73,18 @@ ParsingResult Parser::parse_prefix_expression(std::size_t& token_idx,
                                             std::move(*rhs_expression));
 }
 
-ParsingResult Parser::parse_infix_expression(std::size_t& token_idx,
+ParsingResult Parser::parse_infix_expression(ExpressionPtr lhs_expression,
+                                             std::size_t& token_idx,
                                              const Tokens& tokens) noexcept {
-  return ParsingError{"Parse infix expression not implemented"};
+  const auto operator_token = tokens.at(token_idx++);
+  const auto precendence = AstUtils::token_to_precendece(operator_token.type);
+  auto rhs_result = parse_expression(token_idx, tokens, std::move(precendence));
+  if (std::holds_alternative<ParsingError>(rhs_result)) {
+    return rhs_result;
+  }
+  const auto rhs_expression = &std::get<ExpressionPtr>(rhs_result);
+  return std::make_unique<ExpressionInfix>(
+      std::move(lhs_expression), operator_token, std::move(*rhs_expression));
 }
 
 const std::string Parser::concat_token_literals(const std::size_t& start,
@@ -78,6 +100,14 @@ const std::string Parser::concat_token_literals(const std::size_t& start,
   auto begin = tokens.begin() + static_cast<long>(start + 1);
   return std::accumulate(begin, tokens.end(), tokens[start].literal,
                          concat_space_fold);
+}
+
+bool Parser::is_precendence_higher(const std::size_t& token_idx,
+                                   const Tokens& tokens,
+                                   const Precendence& precendence) noexcept {
+  const auto next_token_type = tokens.at(token_idx).type;
+  const auto peek_precendence = AstUtils::token_to_precendece(next_token_type);
+  return precendence < peek_precendence;
 }
 
 ExpressionPtr Parser::parse_identifier(std::size_t& token_idx,

@@ -1,6 +1,7 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <variant>
@@ -31,7 +32,8 @@ class Parser {
   [[nodiscard]] static ParsingResult parse_prefix_expression(
       std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ParsingResult parse_infix_expression(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
+      ExpressionPtr lhs_expression, std::size_t& token_idx,
+      const Tokens& tokens) noexcept;
 
   template <class FnType>
   [[nodiscard]] static bool is_in_fns(
@@ -41,6 +43,9 @@ class Parser {
   }
   [[nodiscard]] const static std::string concat_token_literals(
       const std::size_t& start, const Tokens& tokens) noexcept;
+  [[nodiscard]] static bool is_precendence_higher(
+      const std::size_t& token_idx, const Tokens& tokens,
+      const Precendence& precendence) noexcept;
 
   // PREFIX
   [[nodiscard]] static ExpressionPtr parse_identifier(std::size_t& token_idx,
@@ -59,7 +64,18 @@ class Parser {
   };
 
   // INFIX
-  inline static const std::unordered_map<TokenType, InfixFn> infix_fns = {};
+  inline static const std::unordered_map<TokenType, InfixFn> infix_fns = {
+      {TokenType::Plus, parse_infix_expression},
+      {TokenType::Minus, parse_infix_expression},
+      {TokenType::Slash, parse_infix_expression},
+      {TokenType::Asterisk, parse_infix_expression},
+      {TokenType::Eq, parse_infix_expression},
+      {TokenType::NotEq, parse_infix_expression},
+      {TokenType::Gt, parse_infix_expression},
+      {TokenType::Ge, parse_infix_expression},
+      {TokenType::Lt, parse_infix_expression},
+      {TokenType::Le, parse_infix_expression},
+  };
 };
 
 #endif  // !PARSER_HPP

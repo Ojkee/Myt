@@ -35,6 +35,56 @@ TEST_CASE("Parsing valid inputs") {
                      std::make_unique<ExpressionPrefix>(
                          Token{TokenType::Bang, "!"},
                          std::make_unique<ExpressionLiteral<bool>>(true)));
+  cases.emplace_back("= 5 + 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Plus, "+"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 - 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Minus, "-"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 * 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Asterisk, "*"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 / 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Slash, "/"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 > 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Gt, ">"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 < 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Lt, "<"},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 >= 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Ge, ">="},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 <= 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Le, "<="},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 == 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::Eq, "=="},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= 5 != 6",
+                     std::make_unique<ExpressionInfix>(
+                         std::make_unique<ExpressionLiteral<int>>(5),
+                         Token{TokenType::NotEq, "!="},
+                         std::make_unique<ExpressionLiteral<int>>(6)));
 
   for (const auto& [input, target] : cases) {
     auto tokens = Lexer::tokenize(input);

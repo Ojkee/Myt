@@ -56,8 +56,9 @@ class ExpressionLiteral : public Expression {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
-    auto otherLiteral = static_cast<const ExpressionLiteral<ExprType>*>(&other);
-    return m_value == otherLiteral->get_value();
+    auto other_literal =
+        static_cast<const ExpressionLiteral<ExprType>*>(&other);
+    return m_value == other_literal->get_value();
   }
   ExprType get_value() const noexcept { return m_value; };
 
@@ -77,8 +78,8 @@ class ExpressionIdentifier : public Expression {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
-    auto otherIdent = static_cast<const ExpressionIdentifier*>(&other);
-    return m_name == otherIdent->get_name();
+    auto other_ident = static_cast<const ExpressionIdentifier*>(&other);
+    return m_name == other_ident->get_name();
   }
 
   std::string get_name() const noexcept { return m_name; };
@@ -102,9 +103,9 @@ class ExpressionPrefix : public Expression {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
-    auto otherPrefix = static_cast<const ExpressionPrefix*>(&other);
-    return m_prefix_token == otherPrefix->get_prefix_token() &&
-           *m_expression == otherPrefix->get_expression();
+    auto other_prefix = static_cast<const ExpressionPrefix*>(&other);
+    return m_prefix_token == other_prefix->get_prefix_token() &&
+           *m_expression == other_prefix->get_expression();
   }
 
   Token get_prefix_token() const noexcept { return m_prefix_token; }
@@ -124,6 +125,24 @@ class ExpressionInfix : public Expression {
       : m_lhs(std::move(lhs)),
         m_operator_token(operator_token),
         m_rhs(std::move(rhs)) {};
+
+  std::string to_string() const override {
+    return "infix(" + m_lhs->to_string() + m_operator_token.literal +
+           m_rhs->to_string() + ")";
+  };
+  bool equals(const Expression& other) const override {
+    if (typeid(*this).hash_code() != typeid(other).hash_code()) {
+      return false;
+    }
+    auto other_infix = static_cast<const ExpressionInfix*>(&other);
+    return *m_lhs == other_infix->get_lhs_expression() &&
+           m_operator_token == other_infix->get_operator_token() &&
+           *m_rhs == other_infix->get_rhs_expression();
+  }
+
+  Token get_operator_token() const noexcept { return m_operator_token; }
+  Expression& get_lhs_expression() const noexcept { return *m_lhs; }
+  Expression& get_rhs_expression() const noexcept { return *m_rhs; }
 
  private:
   std::unique_ptr<Expression> m_lhs;

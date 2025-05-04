@@ -5,8 +5,10 @@ Precendence AstUtils::token_to_precendece(const TokenType& type) noexcept {
     case TokenType::Eq:
     case TokenType::NotEq:
       return Precendence::Equals;
-    case TokenType::Lt:
     case TokenType::Gt:
+    case TokenType::Ge:
+    case TokenType::Lt:
+    case TokenType::Le:
       return Precendence::LessGreater;
     case TokenType::Plus:
     case TokenType::Minus:
