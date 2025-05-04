@@ -95,6 +95,21 @@ class ExpressionPrefix : public Expression {
       : m_prefix_token(std::move(prefix_token)),
         m_expression(std::move(expression)) {};
 
+  std::string to_string() const override {
+    return "prefix(" + m_prefix_token.literal + m_expression->to_string() + ")";
+  };
+  bool equals(const Expression& other) const override {
+    if (typeid(*this).hash_code() != typeid(other).hash_code()) {
+      return false;
+    }
+    auto otherPrefix = static_cast<const ExpressionPrefix*>(&other);
+    return m_prefix_token == otherPrefix->get_prefix_token() &&
+           *m_expression == otherPrefix->get_expression();
+  }
+
+  Token get_prefix_token() const noexcept { return m_prefix_token; }
+  Expression& get_expression() const noexcept { return *m_expression; }
+
  private:
   Token m_prefix_token;
   std::unique_ptr<Expression> m_expression;

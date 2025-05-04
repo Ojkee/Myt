@@ -28,6 +28,13 @@ TEST_CASE("Parsing valid inputs") {
   cases.emplace_back("8 !",
                      std::make_unique<ExpressionLiteral<std::string>>("8 !"));
   cases.emplace_back("= 8", std::make_unique<ExpressionLiteral<int>>(8));
+  cases.emplace_back("= -8", std::make_unique<ExpressionPrefix>(
+                                 Token{TokenType::Minus, "-"},
+                                 std::make_unique<ExpressionLiteral<int>>(8)));
+  cases.emplace_back("= !true",
+                     std::make_unique<ExpressionPrefix>(
+                         Token{TokenType::Bang, "!"},
+                         std::make_unique<ExpressionLiteral<bool>>(true)));
 
   for (const auto& [input, target] : cases) {
     auto tokens = Lexer::tokenize(input);
@@ -41,7 +48,7 @@ TEST_CASE("Parsing valid inputs") {
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
-    CHECK(**expr == *target);
+    CHECK(*expr->get() == *target);
   }
 }
 
