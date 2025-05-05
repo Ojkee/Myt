@@ -27,6 +27,7 @@ std::vector<Token> Lexer::tokenize(
       if (auto str = Lexer::read_forward_if(raw_content, i, not_qoute)) {
         tokens.emplace_back(Token{TokenType::String, std::string(*str)});
       }
+      i++;
     } else if (auto cell_ident = Lexer::read_cell_indent(raw_content, i)) {
       const auto token_value = std::string(*cell_ident);
       const auto token = Token{TokenType::CellIdentifier, token_value};
@@ -49,7 +50,6 @@ std::vector<Token> Lexer::tokenize(
       const auto token = Token{TokenType::Illegal, "Illegal"};
       tokens.emplace_back(token);
     }
-
     i++;
   }
 
@@ -137,8 +137,11 @@ std::optional<std::string_view> Lexer::read_forward_if(
     len++;
     cur_it++;
   }
-  return (len != 0) ? std::optional(std::string_view{start, len})
-                    : std::nullopt;
+  if (len > 0) {
+    cur_it--;
+    return std::string_view{start, len};
+  }
+  return std::nullopt;
 }
 
 std::optional<std::string_view> Lexer::read_cell_indent(
@@ -147,7 +150,7 @@ std::optional<std::string_view> Lexer::read_cell_indent(
 
   const auto start = cur_it;
   auto it = cur_it;
-  while (it != content.end() && !Lexer::is_whitespace(*it)) {
+  while (it != content.end()) {
     if (Lexer::is_cell_identifier_char(*it)) {
       if (started_number_idx)
         return std::nullopt;
@@ -163,12 +166,12 @@ std::optional<std::string_view> Lexer::read_cell_indent(
       }
       it++;
     } else {
-      return std::nullopt;
+      break;
     }
   }
   if (started_letter_idx && started_number_idx) {
-    cur_it = it;
     auto len = static_cast<std::size_t>(it - start);
+    cur_it = --it;
     return std::string_view{start, len};
   }
   return std::nullopt;

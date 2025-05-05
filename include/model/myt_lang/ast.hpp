@@ -69,23 +69,24 @@ class ExpressionLiteral : public Expression {
 class ExpressionIdentifier : public Expression {
  public:
   ExpressionIdentifier() = delete;
-  ExpressionIdentifier(const std::string& value)
-      : Expression(), m_name(value) {};
+  ExpressionIdentifier(const Token& name_token) : m_name_token(name_token) {};
 
-  std::string to_string() const override { return "ident(" + m_name + ")"; }
+  std::string to_string() const override {
+    return "ident(" + m_name_token.literal + ")";
+  }
 
   bool equals(const Expression& other) const override {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
     auto other_ident = static_cast<const ExpressionIdentifier*>(&other);
-    return m_name == other_ident->get_name();
+    return m_name_token == other_ident->get_name_token();
   }
 
-  std::string get_name() const noexcept { return m_name; };
+  Token get_name_token() const noexcept { return m_name_token; };
 
  private:
-  std::string m_name{};
+  Token m_name_token{};
 };
 
 class ExpressionPrefix : public Expression {

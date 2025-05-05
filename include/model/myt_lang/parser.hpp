@@ -56,6 +56,8 @@ class Parser {
       std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ParsingResult parse_bool_literal(
       std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static ParsingResult parse_grouped_expression(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
 
   inline static const std::unordered_map<TokenType, PrefixFn> prefix_fns = {
       {TokenType::Identifier, parse_identifier},
@@ -64,6 +66,7 @@ class Parser {
       {TokenType::Minus, parse_prefix_expression},
       {TokenType::Bang, parse_prefix_expression},
       {TokenType::Bool, parse_bool_literal},
+      {TokenType::LParen, parse_grouped_expression},
   };
 
   // INFIX

@@ -1,4 +1,5 @@
 # --- Build directory ---
+.cache/
 build/
 
 # --- CMake build files ---

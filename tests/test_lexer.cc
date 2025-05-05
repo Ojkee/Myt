@@ -82,7 +82,7 @@ TEST_CASE("Tokenization") {
                        Token{TokenType::CellIdentifier, "AZ30"},
                        Token{TokenType::CellIdentifier, "ZK1"},
                        Token{TokenType::Identifier, "ZK"},
-                       Token{TokenType::Int, "1"},
+                       Token{TokenType::Int, "01"},
                        Token{TokenType::EndOfCell, "EOC"},
                    }}};
 
