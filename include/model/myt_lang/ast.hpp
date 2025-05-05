@@ -150,4 +150,25 @@ class ExpressionInfix : public Expression {
   std::unique_ptr<Expression> m_rhs;
 };
 
+class ExpressionCell : public Expression {
+ public:
+  ExpressionCell() = delete;
+  ExpressionCell(const Token& cell_token) : m_cell_token(cell_token) {};
+
+  std::string to_string() const override {
+    return "cell(" + m_cell_token.literal + ")";
+  };
+  bool equals(const Expression& other) const override {
+    if (typeid(*this).hash_code() != typeid(other).hash_code()) {
+      return false;
+    }
+    auto other_cell = static_cast<const ExpressionCell*>(&other);
+    return m_cell_token == other_cell->get_cell_token();
+  }
+  const Token get_cell_token() const noexcept { return m_cell_token; };
+
+ private:
+  Token m_cell_token{};
+};
+
 #endif  // !AST_HPP

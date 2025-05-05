@@ -2,7 +2,6 @@
 
 #include <climits>
 #include <cstddef>
-#include <iostream>
 #include <memory>
 #include <numeric>
 #include <stdexcept>
@@ -111,15 +110,21 @@ bool Parser::is_precendence_higher(const std::size_t& token_idx,
 }
 
 ExpressionPtr Parser::parse_identifier(std::size_t& token_idx,
-                                       const Tokens& tokens) {
+                                       const Tokens& tokens) noexcept {
   auto ident =
       std::make_unique<ExpressionIdentifier>(tokens.at(token_idx).literal);
   token_idx++;
   return ident;
 }
 
+ExpressionPtr Parser::parse_cell_identifier(std::size_t& token_idx,
+                                            const Tokens& tokens) noexcept {
+  const auto token = tokens.at(token_idx++);
+  return std::make_unique<ExpressionCell>(token);
+}
+
 ParsingResult Parser::parse_int_literal(std::size_t& token_idx,
-                                        const Tokens& tokens) {
+                                        const Tokens& tokens) noexcept {
   const auto current_token = tokens.at(token_idx);
   token_idx++;
   try {
@@ -136,7 +141,7 @@ ParsingResult Parser::parse_int_literal(std::size_t& token_idx,
 }
 
 ParsingResult Parser::parse_bool_literal(std::size_t& token_idx,
-                                         const Tokens& tokens) {
+                                         const Tokens& tokens) noexcept {
   const auto token_value = tokens.at(token_idx++).literal == "true";
   return std::make_unique<ExpressionLiteral<bool>>(token_value);
 }

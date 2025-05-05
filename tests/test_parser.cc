@@ -87,14 +87,14 @@ TEST_CASE("Parsing valid inputs") {
                          std::make_unique<ExpressionLiteral<int>>(6)));
 
   for (const auto& [input, target] : cases) {
-    auto tokens = Lexer::tokenize(input);
-    auto parsed = Parser::parse(tokens);
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
     if (std::holds_alternative<ParsingError>(parsed)) {
       auto err = std::get<ParsingError>(parsed);
       FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
            input + "`");
     }
-    auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
@@ -102,4 +102,31 @@ TEST_CASE("Parsing valid inputs") {
   }
 }
 
-TEST_CASE("Parsing invalid inputs") {}
+TEST_CASE("Parsing precendence inputs") {
+  using inputType = std::string;
+  using targetType = std::string;
+  using testCases = std::vector<std::tuple<inputType, targetType>>;
+
+  testCases cases{{"= 5", "int(5)"},
+                  {"= a", "ident(a)"},
+                  {"5", "string(5)"},
+                  {"= 5 * 10", "infix(int(5)*int(10))"},
+                  {"", "string()"},
+                  {"= -1", "prefix(-int(1))"},
+                  {"= -a", "prefix(-ident(a))"},
+                  {"=C110", "cell(C110)"}};
+  for (const auto& [input, target] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    if (std::holds_alternative<ParsingError>(parsed)) {
+      auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
+           input + "`");
+    }
+    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    if (expr == nullptr) {
+      FAIL("Want Expression, got nullptr");
+    }
+    CHECK(expr->get()->to_string() == target);
+  }
+}

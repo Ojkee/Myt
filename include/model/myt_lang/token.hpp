@@ -10,6 +10,7 @@ enum class TokenType : uint8_t {
   EndOfCell,
 
   Identifier,
+  CellIdentifier,
 
   Bool,
   Int,

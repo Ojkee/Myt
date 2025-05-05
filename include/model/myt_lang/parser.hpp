@@ -48,15 +48,18 @@ class Parser {
       const Precendence& precendence) noexcept;
 
   // PREFIX
-  [[nodiscard]] static ExpressionPtr parse_identifier(std::size_t& token_idx,
-                                                      const Tokens& tokens);
-  [[nodiscard]] static ParsingResult parse_int_literal(std::size_t& token_idx,
-                                                       const Tokens& tokens);
-  [[nodiscard]] static ParsingResult parse_bool_literal(std::size_t& token_idx,
-                                                        const Tokens& tokens);
+  [[nodiscard]] static ExpressionPtr parse_identifier(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static ExpressionPtr parse_cell_identifier(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static ParsingResult parse_int_literal(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static ParsingResult parse_bool_literal(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
 
   inline static const std::unordered_map<TokenType, PrefixFn> prefix_fns = {
       {TokenType::Identifier, parse_identifier},
+      {TokenType::CellIdentifier, parse_cell_identifier},
       {TokenType::Int, parse_int_literal},
       {TokenType::Minus, parse_prefix_expression},
       {TokenType::Bang, parse_prefix_expression},

@@ -10,6 +10,8 @@ const std::string token_type_to_string(const TokenType& tokenType) noexcept {
       return "EndOfCell";
     case TokenType::Identifier:
       return "Identifier";
+    case TokenType::CellIdentifier:
+      return "CellIdentifier";
     case TokenType::Bool:
       return "Bool";
     case TokenType::Int:
