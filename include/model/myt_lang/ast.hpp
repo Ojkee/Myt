@@ -6,12 +6,15 @@
 #include <memory>
 #include <numeric>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <vector>
 
 #include "token.hpp"
 
 class Expression;
+
+using FloatType = float;
 
 using ExpressionPtr = std::unique_ptr<Expression>;
 using Arguments = std::vector<ExpressionPtr>;
@@ -46,7 +49,11 @@ class Expression {
   bool operator==(const Expression& other) const { return this->equals(other); }
 };
 
-template <class ExprType>
+template <class ExprType, class = typename std::enable_if<
+                              std::is_same<ExprType, bool>::value ||
+                              std::is_same<ExprType, int>::value ||
+                              std::is_same<ExprType, std::string>::value ||
+                              std::is_same<ExprType, FloatType>::value>::type>
 class ExpressionLiteral : public Expression {
  public:
   ExpressionLiteral() = delete;
@@ -55,7 +62,8 @@ class ExpressionLiteral : public Expression {
   std::string to_string() const override {
     if constexpr (std::is_same_v<ExprType, bool>) {
       return "bool(" + std::string(m_value ? "true" : "false") + ")";
-    } else if constexpr (std::is_same_v<ExprType, int>) {
+    } else if constexpr (std::is_same_v<ExprType, int> ||
+                         std::is_same_v<ExprType, FloatType>) {
       return "int(" + std::to_string(m_value) + ")";
     } else if constexpr (std::is_same_v<ExprType, std::string>) {
       return "string(" + m_value + ")";

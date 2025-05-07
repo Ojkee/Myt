@@ -5,8 +5,6 @@
 #include <string>
 #include <unordered_map>
 
-using FloatingPointType = float;
-
 enum class TokenType : uint8_t {
   Illegal,
   EndOfCell,

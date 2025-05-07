@@ -18,7 +18,7 @@ struct StringMaker<Expression> {
 
 TEST_CASE("Parsing valid inputs") {
   using inputType = std::string;
-  using targetType = std::unique_ptr<Expression>;
+  using targetType = ExpressionPtr;
   using testCases = std::vector<std::tuple<inputType, targetType>>;
 
   testCases cases;
@@ -203,5 +203,38 @@ TEST_CASE("Parsing call expressions") {
       FAIL("Want Expression, got nullptr");
     }
     CHECK(expr->get()->to_string() == target);
+  }
+}
+
+TEST_CASE("Parsing float expressions") {
+  using inputType = std::string;
+  using targetType = ExpressionPtr;
+  using testCases = std::vector<std::tuple<inputType, targetType>>;
+
+  testCases cases{};
+  cases.emplace_back("= 55.0",
+                     std::make_unique<ExpressionLiteral<FloatType>>(55.0));
+  cases.emplace_back("= .03",
+                     std::make_unique<ExpressionLiteral<FloatType>>(0.03));
+  cases.emplace_back("= 93.53",
+                     std::make_unique<ExpressionLiteral<FloatType>>(93.53));
+  cases.emplace_back("= 028.890",
+                     std::make_unique<ExpressionLiteral<FloatType>>(28.89));
+  cases.emplace_back("= 34.",
+                     std::make_unique<ExpressionLiteral<FloatType>>(34.0));
+
+  for (const auto& [input, target] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    if (std::holds_alternative<ParsingError>(parsed)) {
+      const auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
+           input + "`");
+    }
+    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    if (expr == nullptr) {
+      FAIL("Want Expression, got nullptr");
+    }
+    CHECK(*expr->get() == *target);
   }
 }

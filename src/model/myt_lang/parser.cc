@@ -163,18 +163,25 @@ ExpressionPtr Parser::parse_cell_identifier(std::size_t& token_idx,
 
 ParsingResult Parser::parse_int_literal(std::size_t& token_idx,
                                         const Tokens& tokens) noexcept {
-  const auto current_token = tokens.at(token_idx++);
+  const auto int_token = tokens.at(token_idx++);
   try {
-    const auto tokenValue = std::stoi(current_token.literal);
+    const auto tokenValue = std::stoi(int_token.literal);
     return std::make_unique<ExpressionLiteral<int>>(tokenValue);
   } catch (std::invalid_argument) {
-    return ParsingError{"Couldn't parse: `" + current_token.literal +
-                        "` to int"};
+    return ParsingError{"Couldn't parse: `" + int_token.literal + "` to int"};
   } catch (std::out_of_range) {
-    return ParsingError{"Couldn't parse: `" + current_token.literal +
+    return ParsingError{"Couldn't parse: `" + int_token.literal +
                         "` to int, target range: (" + std::to_string(INT_MIN) +
                         ", " + std::to_string(INT_MAX) + ")"};
   }
+}
+
+ParsingResult Parser::parse_float_literal(std::size_t& token_idx,
+                                          const Tokens& tokens) noexcept {
+  const auto float_token = tokens.at(token_idx++);
+  const auto value = std::stod(float_token.literal);
+  const auto value_correct_type = static_cast<FloatType>(value);
+  return std::make_unique<ExpressionLiteral<FloatType>>(value_correct_type);
 }
 
 ParsingResult Parser::parse_bool_literal(std::size_t& token_idx,
