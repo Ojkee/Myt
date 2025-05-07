@@ -1,9 +1,10 @@
 #include "../../../include/model/myt_lang/token.hpp"
 
+#include <cassert>
 #include <cstdio>
 
-const std::string token_type_to_string(const TokenType& tokenType) noexcept {
-  switch (tokenType) {
+const std::string token_type_to_string(const TokenType& token_type) noexcept {
+  switch (token_type) {
     case TokenType::Illegal:
       return "Illegal";
     case TokenType::EndOfCell:
@@ -36,12 +37,12 @@ const std::string token_type_to_string(const TokenType& tokenType) noexcept {
       return "Slash";
     case TokenType::Comma:
       return "Comma";
+    case TokenType::Colon:
+      return "Colon";
     case TokenType::LParen:
       return "LParen";
     case TokenType::RParen:
       return "RParen";
-    case TokenType::If:
-      return "If";
     case TokenType::Eq:
       return "==";
     case TokenType::NotEq:
@@ -54,6 +55,8 @@ const std::string token_type_to_string(const TokenType& tokenType) noexcept {
       return ">=";
     case TokenType::Le:
       return "<=";
+    default:
+      assert(false && "Unimplemented token_type to string");
   }
   return "Unimplemented Token Type";
 }

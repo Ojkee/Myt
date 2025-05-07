@@ -17,7 +17,7 @@ struct StringMaker<std::vector<Token>> {
 
 TEST_CASE("Tokenization") {
   using testCases = std::vector<std::tuple<std::string, std::vector<Token>>>;
-  testCases cases{{"= + ! - * / (,)",
+  testCases cases{{"= + ! - * / (,):",
                    {
                        Token{TokenType::Assign, "="},
                        Token{TokenType::Plus, "+"},
@@ -28,6 +28,7 @@ TEST_CASE("Tokenization") {
                        Token{TokenType::LParen, "("},
                        Token{TokenType::Comma, ","},
                        Token{TokenType::RParen, ")"},
+                       Token{TokenType::Colon, ":"},
                        Token{TokenType::EndOfCell, "EOC"},
                    }},
                   {"> < >= <= == !=",
@@ -40,11 +41,10 @@ TEST_CASE("Tokenization") {
                        Token{TokenType::NotEq, "!="},
                        Token{TokenType::EndOfCell, "EOC"},
                    }},
-                  {"true false if some other_words",
+                  {"true false some other_words",
                    {
                        Token{TokenType::Bool, "true"},
                        Token{TokenType::Bool, "false"},
-                       Token{TokenType::If, "if"},
                        Token{TokenType::Identifier, "some"},
                        Token{TokenType::Identifier, "other_words"},
                        Token{TokenType::EndOfCell, "EOC"},
@@ -84,7 +84,18 @@ TEST_CASE("Tokenization") {
                        Token{TokenType::Identifier, "ZK"},
                        Token{TokenType::Int, "01"},
                        Token{TokenType::EndOfCell, "EOC"},
-                   }}};
+                   }},
+                  {
+                      "93.53 34. 341.5223 028.890 .5",
+                      {
+                          Token{TokenType::Float, "93.53"},
+                          Token{TokenType::Float, "34."},
+                          Token{TokenType::Float, "341.5223"},
+                          Token{TokenType::Float, "028.890"},
+                          Token{TokenType::Float, ".5"},
+                          Token{TokenType::EndOfCell, "EOC"},
+                      },
+                  }};
 
   for (const auto& [input, target] : cases) {
     CHECK(Lexer::tokenize(input) == target);

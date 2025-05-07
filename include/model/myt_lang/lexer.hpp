@@ -33,7 +33,11 @@ class Lexer {
       const std::string_view& content, std::string_view::iterator& cur_it,
       const Condition& cond) noexcept;
   [[nodiscard]] static std::optional<std::string_view> read_cell_indent(
-      const std::string_view& content, std::string_view::iterator& cur_it);
+      const std::string_view& content,
+      std::string_view::iterator& cur_it) noexcept;
+  [[nodiscard]] static std::optional<std::string_view> read_float(
+      const std::string_view& content,
+      std::string_view::iterator& cur_it) noexcept;
   [[nodiscard]] static bool is_keyword(const std::string& ident) noexcept;
   [[nodiscard]] static std::optional<TokenType> get_token_type_keyword(
       const std::string& ident) noexcept;

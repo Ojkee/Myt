@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-// TODO: implement Floats
 std::vector<Token> Lexer::tokenize(
     const std::string_view& raw_content) noexcept {
   const auto not_qoute = [](const char& c) { return c != '\"'; };
@@ -42,6 +41,9 @@ std::vector<Token> Lexer::tokenize(
         const auto token = Token{TokenType::Identifier, std::string(*ident)};
         tokens.emplace_back(token);
       }
+    } else if (auto float_num = Lexer::read_float(raw_content, i)) {
+      const auto token = Token{TokenType::Float, std::string(*float_num)};
+      tokens.emplace_back(token);
     } else if (auto num =
                    Lexer::read_forward_if(raw_content, i, Lexer::is_numeric)) {
       const auto token = Token{TokenType::Int, std::string(*num)};
@@ -108,6 +110,8 @@ std::optional<Token> Lexer::get_sign_token(
       return Token{TokenType::Slash, "/"};
     case ',':
       return Token{TokenType::Comma, ","};
+    case ':':
+      return Token{TokenType::Colon, ":"};
     case '(':
       return Token{TokenType::LParen, "("};
     case ')':
@@ -145,28 +149,29 @@ std::optional<std::string_view> Lexer::read_forward_if(
 }
 
 std::optional<std::string_view> Lexer::read_cell_indent(
-    const std::string_view& content, std::string_view::iterator& cur_it) {
+    const std::string_view& content,
+    std::string_view::iterator& cur_it) noexcept {
   bool started_letter_idx{false}, started_number_idx{false};
 
   const auto start = cur_it;
   auto it = cur_it;
-  while (it != content.end()) {
+  constexpr auto char_or_num = [](const auto& c) {
+    return Lexer::is_cell_identifier_char(c) || Lexer::is_numeric(c);
+  };
+
+  for (; it != content.end() && char_or_num(*it); ++it) {
     if (Lexer::is_cell_identifier_char(*it)) {
       if (started_number_idx)
         return std::nullopt;
       else if (!started_letter_idx)
         started_letter_idx = true;
-      it++;
-    } else if (Lexer::is_numeric(*it)) {
+    } else {
       if (!started_letter_idx)
         return std::nullopt;
       else if (!started_number_idx) {
         if (*it == '0') return std::nullopt;
         started_number_idx = true;
       }
-      it++;
-    } else {
-      break;
     }
   }
   if (started_letter_idx && started_number_idx) {
@@ -175,6 +180,32 @@ std::optional<std::string_view> Lexer::read_cell_indent(
     return std::string_view{start, len};
   }
   return std::nullopt;
+}
+
+std::optional<std::string_view> Lexer::read_float(
+    const std::string_view& content,
+    std::string_view::iterator& cur_it) noexcept {
+  const auto start = cur_it;
+  auto it = cur_it;
+  bool seen_dot{false};
+  bool seen_num{false};
+  const auto num_or_point = [](const auto& c) {
+    return Lexer::is_numeric(c) || c == '.';
+  };
+
+  for (; it != content.end() && num_or_point(*it); ++it) {
+    if (*it == '.') {
+      if (seen_dot) return std::nullopt;
+      seen_dot = true;
+    } else if (is_numeric(*it)) {
+      seen_num = true;
+    }
+  }
+  if (!seen_dot || !seen_num) return std::nullopt;
+
+  auto len = static_cast<std::size_t>(it - start);
+  cur_it = --it;
+  return std::string_view{start, len};
 }
 
 bool Lexer::is_keyword(const std::string& ident) noexcept {

@@ -16,7 +16,16 @@ Precendence AstUtils::token_to_precendece(const TokenType& type) noexcept {
     case TokenType::Slash:
     case TokenType::Asterisk:
       return Precendence::Product;
+    case TokenType::Colon:
+      return Precendence::CellRange;
+    case TokenType::LParen:
+      return Precendence::Call;
     default:
       return Precendence::Lowest;
   }
+}
+
+bool AstUtils::same_hash_code(const Expression& lhs,
+                              const Expression& rhs) noexcept {
+  return typeid(lhs).hash_code() == typeid(rhs).hash_code();
 }

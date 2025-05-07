@@ -85,13 +85,19 @@ TEST_CASE("Parsing valid inputs") {
                          std::make_unique<ExpressionLiteral<int>>(5),
                          Token{TokenType::NotEq, "!="},
                          std::make_unique<ExpressionLiteral<int>>(6)));
+  cases.emplace_back("= A5:B3", std::make_unique<ExpressionInfix>(
+                                    std::make_unique<ExpressionCell>(
+                                        Token{TokenType::CellIdentifier, "A5"}),
+                                    Token{TokenType::Colon, ":"},
+                                    std::make_unique<ExpressionCell>(Token{
+                                        TokenType::CellIdentifier, "B3"})));
 
   for (const auto& [input, target] : cases) {
     const auto tokens = Lexer::tokenize(input);
     const auto parsed = Parser::parse(tokens);
     if (std::holds_alternative<ParsingError>(parsed)) {
-      auto err = std::get<ParsingError>(parsed);
-      FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
+      const auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
     const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
@@ -134,8 +140,8 @@ TEST_CASE("Parsing precendence inputs") {
     const auto tokens = Lexer::tokenize(input);
     const auto parsed = Parser::parse(tokens);
     if (std::holds_alternative<ParsingError>(parsed)) {
-      auto err = std::get<ParsingError>(parsed);
-      FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
+      const auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
     const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
@@ -159,8 +165,37 @@ TEST_CASE("Parsing precendence inputs grouped") {
     const auto tokens = Lexer::tokenize(input);
     const auto parsed = Parser::parse(tokens);
     if (std::holds_alternative<ParsingError>(parsed)) {
-      auto err = std::get<ParsingError>(parsed);
-      FAIL("Want Expression, got ParsingError: " + err.content + " in: `" +
+      const auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
+           input + "`");
+    }
+    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    if (expr == nullptr) {
+      FAIL("Want Expression, got nullptr");
+    }
+    CHECK(expr->get()->to_string() == target);
+  }
+}
+
+TEST_CASE("Parsing call expressions") {
+  using inputType = std::string;
+  using targetType = std::string;
+  using testCases = std::vector<std::tuple<inputType, targetType>>;
+
+  testCases cases{
+      {"= foo()", "fn_call(ident(foo)())"},
+      {"= bar(B23)", "fn_call(ident(bar)(cell(B23)))"},
+      {"= add(5, 3)", "fn_call(ident(add)(int(5), int(3)))"},
+      {"= add(5, sub(3, 2), 8)",
+       "fn_call(ident(add)(int(5), fn_call(ident(sub)(int(3), int(2))), "
+       "int(8)))"},
+  };
+  for (const auto& [input, target] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    if (std::holds_alternative<ParsingError>(parsed)) {
+      const auto err = std::get<ParsingError>(parsed);
+      FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
     const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);

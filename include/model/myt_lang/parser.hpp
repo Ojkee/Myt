@@ -3,15 +3,14 @@
 
 #include <cstddef>
 #include <functional>
-#include <memory>
 #include <variant>
 #include <vector>
 
 #include "ast.hpp"
 #include "token.hpp"
 
-using ExpressionPtr = std::unique_ptr<Expression>;
 using ParsingResult = std::variant<ExpressionPtr, ParsingError>;
+using ArgumentsResult = std::variant<Arguments, ParsingError>;
 using Tokens = std::vector<Token>;
 using PrefixFn =
     std::function<ParsingResult(std::size_t& token_idx, const Tokens& tokens)>;
@@ -21,33 +20,31 @@ using InfixFn = std::function<ParsingResult(
 class Parser {
  public:
   [[nodiscard]] static ParsingResult parse(const Tokens& tokens) noexcept;
+  void static print_result(const ParsingResult& result) noexcept;
 
  private:
-  [[nodiscard]] static ParsingResult parse_expression(
-      std::size_t& token_idx, const Tokens& tokens,
-      const Precendence&& precendence) noexcept;
-  [[nodiscard]] static ParsingResult parse_prefix_fn(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-
-  [[nodiscard]] static ParsingResult parse_prefix_expression(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_infix_expression(
-      ExpressionPtr lhs_expression, std::size_t& token_idx,
-      const Tokens& tokens) noexcept;
-
   template <class FnType>
   [[nodiscard]] static bool is_in_fns(
       const std::unordered_map<TokenType, FnType>& fns,
       const TokenType& type) noexcept {
     return fns.find(type) != fns.end();
   }
+  [[nodiscard]] static ParsingResult parse_expression(
+      std::size_t& token_idx, const Tokens& tokens,
+      const Precendence&& precendence) noexcept;
+  [[nodiscard]] static ParsingResult parse_prefix_fn(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] const static std::string concat_token_literals(
-      const std::size_t& start, const Tokens& tokens) noexcept;
+      const std::size_t& start_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static bool is_precendence_higher(
       const std::size_t& token_idx, const Tokens& tokens,
       const Precendence& precendence) noexcept;
+  [[nodiscard]] static ArgumentsResult parse_call_arguments(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
 
   // PREFIX
+  [[nodiscard]] static ParsingResult parse_prefix_expression(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ExpressionPtr parse_identifier(
       std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ExpressionPtr parse_cell_identifier(
@@ -60,27 +57,36 @@ class Parser {
       std::size_t& token_idx, const Tokens& tokens) noexcept;
 
   inline static const std::unordered_map<TokenType, PrefixFn> prefix_fns = {
+      {TokenType::Minus, parse_prefix_expression},
+      {TokenType::Bang, parse_prefix_expression},
       {TokenType::Identifier, parse_identifier},
       {TokenType::CellIdentifier, parse_cell_identifier},
       {TokenType::Int, parse_int_literal},
-      {TokenType::Minus, parse_prefix_expression},
-      {TokenType::Bang, parse_prefix_expression},
       {TokenType::Bool, parse_bool_literal},
       {TokenType::LParen, parse_grouped_expression},
   };
 
   // INFIX
+  [[nodiscard]] static ParsingResult parse_infix_expression(
+      ExpressionPtr lhs_expression, std::size_t& token_idx,
+      const Tokens& tokens) noexcept;
+  [[nodiscard]] static ParsingResult parse_fn_call_expression(
+      ExpressionPtr lhs_expression, std::size_t& token_idx,
+      const Tokens& tokens) noexcept;
+
   inline static const std::unordered_map<TokenType, InfixFn> infix_fns = {
       {TokenType::Plus, parse_infix_expression},
       {TokenType::Minus, parse_infix_expression},
-      {TokenType::Slash, parse_infix_expression},
       {TokenType::Asterisk, parse_infix_expression},
+      {TokenType::Slash, parse_infix_expression},
+      {TokenType::Colon, parse_infix_expression},
       {TokenType::Eq, parse_infix_expression},
       {TokenType::NotEq, parse_infix_expression},
       {TokenType::Gt, parse_infix_expression},
       {TokenType::Ge, parse_infix_expression},
       {TokenType::Lt, parse_infix_expression},
       {TokenType::Le, parse_infix_expression},
+      {TokenType::LParen, parse_fn_call_expression},
   };
 };
 
