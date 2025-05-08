@@ -7,6 +7,8 @@
 
 #include "data_cell.hpp"
 
+using CellMap = std::unordered_map<CellPos, DataCell>;
+
 class Page {
  public:
   Page();
@@ -24,7 +26,7 @@ class Page {
   void save_eval_cell();
 
   bool m_is_running{true};
-  std::unordered_map<CellPos, DataCell> m_cells;
+  CellMap m_cells;
 };
 
 #endif  // !STATE_HPP

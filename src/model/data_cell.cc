@@ -36,21 +36,17 @@ CellLimitType CellPos::convert_letters(const std::string_view& valid_format_str,
   return static_cast<CellLimitType>(converted);
 }
 
-DataCell::DataCell() : m_raw_content(""), m_evaluated_content(std::nullopt) {}
-
-DataCell::DataCell(const std::string& raw_content)
-    : m_raw_content(raw_content), m_evaluated_content(std::nullopt) {}
-
 std::string DataCell::get_raw_content() const noexcept { return m_raw_content; }
 
 void DataCell::set_raw_content(const std::string& value) noexcept {
   m_raw_content = value;
 }
 
-void DataCell::set_eval_content(MytObjectPtr&& value) noexcept {
-  m_evaluated_content = std::move(value);
+const std::shared_ptr<MytObject> DataCell::get_evaluated_content()
+    const noexcept {
+  return m_evaluated_content;
 }
 
-bool DataCell::is_evaluated() const noexcept {
-  return m_evaluated_content != std::nullopt;
+void DataCell::set_eval_content(MytObjectPtr&& value) noexcept {
+  m_evaluated_content = std::move(value);
 }

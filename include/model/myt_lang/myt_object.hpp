@@ -46,6 +46,7 @@ class ErrorObject : public MytObject {
  public:
   ErrorObject() = delete;
   ErrorObject(const std::string& value) : m_value(value) {};
+
   [[nodiscard]] const std::string to_string() const noexcept override {
     return "Error: `" + m_value + "`";
   };
