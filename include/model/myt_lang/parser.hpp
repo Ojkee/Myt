@@ -55,6 +55,8 @@ class Parser {
       std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ParsingResult parse_bool_literal(
       std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static ParsingResult parse_string_literal(
+      std::size_t& token_idx, const Tokens& tokens) noexcept;
   [[nodiscard]] static ParsingResult parse_grouped_expression(
       std::size_t& token_idx, const Tokens& tokens) noexcept;
 
@@ -66,6 +68,7 @@ class Parser {
       {TokenType::Int, parse_int_literal},
       {TokenType::Float, parse_float_literal},
       {TokenType::Bool, parse_bool_literal},
+      {TokenType::String, parse_string_literal},
       {TokenType::LParen, parse_grouped_expression},
   };
 

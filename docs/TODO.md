@@ -3,15 +3,8 @@
 ## Essential
 
 - [x] Lexing cells
-- [ ] Parsing cells
+- [x] Parsing cells
 - [ ] Evaluate cells
-- [ ] Lambda 
-```
-Lambda(x y => Sqrt(x) * y) 
-
-
-Apply([Lambda Cell], )
-```
 - [ ] Error handling
 - [ ] Few builtins
 - [ ] Connect to ui
@@ -21,3 +14,11 @@ Apply([Lambda Cell], )
 - [ ] Auto resize number of rows and cols 
 - [ ] Resize window
 - [ ] Move cells around
+- [ ] Lambda 
+
+```
+Lambda(x y => Sqrt(x) * y) 
+
+Apply([Lambda Cell], )
+```
+

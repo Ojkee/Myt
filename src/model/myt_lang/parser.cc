@@ -190,6 +190,12 @@ ParsingResult Parser::parse_bool_literal(std::size_t& token_idx,
   return std::make_unique<ExpressionLiteral<bool>>(token_value);
 }
 
+ParsingResult Parser::parse_string_literal(std::size_t& token_idx,
+                                           const Tokens& tokens) noexcept {
+  const auto token_value = tokens.at(token_idx++).literal;
+  return std::make_unique<ExpressionLiteral<std::string>>(token_value);
+}
+
 ParsingResult Parser::parse_grouped_expression(std::size_t& token_idx,
                                                const Tokens& tokens) noexcept {
   auto expr =

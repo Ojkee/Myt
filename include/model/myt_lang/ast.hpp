@@ -44,7 +44,7 @@ class Expression {
  public:
   virtual ~Expression() = default;
   virtual std::string to_string() const = 0;
-  virtual bool equals(const Expression& other) const = 0;
+  virtual bool equals(const Expression& other) const noexcept = 0;
 
   bool operator==(const Expression& other) const { return this->equals(other); }
 };
@@ -70,7 +70,7 @@ class ExpressionLiteral : public Expression {
     }
     return "Unimplemented to_string() of this type";
   }
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (!AstUtils::same_hash_code(*this, other)) return false;
     const auto other_literal =
         static_cast<const ExpressionLiteral<ExprType>*>(&other);
@@ -92,7 +92,7 @@ class ExpressionIdentifier : public Expression {
     return "ident(" + m_name_token.literal + ")";
   }
 
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
@@ -116,7 +116,7 @@ class ExpressionPrefix : public Expression {
   std::string to_string() const override {
     return "prefix(" + m_prefix_token.literal + m_expression->to_string() + ")";
   };
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
@@ -146,7 +146,7 @@ class ExpressionInfix : public Expression {
     return "infix(" + m_lhs->to_string() + m_operator_token.literal +
            m_rhs->to_string() + ")";
   };
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (typeid(*this).hash_code() != typeid(other).hash_code()) {
       return false;
     }
@@ -174,7 +174,7 @@ class ExpressionCell : public Expression {
   std::string to_string() const override {
     return "cell(" + m_cell_token.literal + ")";
   };
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (!AstUtils::same_hash_code(*this, other)) return false;
 
     const auto other_cell = static_cast<const ExpressionCell*>(&other);
@@ -207,7 +207,7 @@ class ExpressionFnCall : public Expression {
     return "fn_call(" + m_fn_identifier->to_string() + "(" + args_to_str() +
            "))";
   };
-  bool equals(const Expression& other) const override {
+  bool equals(const Expression& other) const noexcept override {
     if (!AstUtils::same_hash_code(*this, other)) return false;
 
     const auto other_fn_call = static_cast<const ExpressionFnCall*>(&other);
