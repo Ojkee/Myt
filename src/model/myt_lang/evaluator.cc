@@ -10,11 +10,17 @@
 #include "model/myt_lang/token.hpp"
 #include "model/page.hpp"
 
+#define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
+#define MS_T(T, value) std::make_shared<T>(value)
+#define D_CAST(T, expr) dynamic_cast<const T*>(&(expr))
+#define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
+#define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
+
 MytObjectPtr Evaluator::evaluate(const ParsingResult& parsed_result,
                                  const CellMap& cells) noexcept {
   if (std::holds_alternative<ParsingError>(parsed_result)) {
     const auto err = &std::get<ParsingError>(parsed_result);
-    return std::make_unique<ErrorObject>(err->content);
+    return MS_T(ErrorObject, err->content);
   }
 
   const auto expr = std::get<ExpressionPtr>(parsed_result).get();
@@ -23,24 +29,30 @@ MytObjectPtr Evaluator::evaluate(const ParsingResult& parsed_result,
 
 MytObjectPtr Evaluator::evaluate_expression(const Expression& expr,
                                             const CellMap& cells) noexcept {
-  if (auto exrp_int = dynamic_cast<const ExpressionLiteral<int>*>(&expr)) {
-    return std::make_shared<ValueObject<int>>(exrp_int->get_value());
-  } else if (auto exrp_int =
-                 dynamic_cast<const ExpressionLiteral<std::string>*>(&expr)) {
-    return std::make_shared<ValueObject<std::string>>(exrp_int->get_value());
-  } else if (auto exrp_int =
-                 dynamic_cast<const ExpressionLiteral<bool>*>(&expr)) {
-    return std::make_shared<ValueObject<bool>>(exrp_int->get_value());
-  } else if (auto exrp_int =
-                 dynamic_cast<const ExpressionLiteral<FloatType>*>(&expr)) {
-    return std::make_shared<ValueObject<FloatType>>(exrp_int->get_value());
-  } else if (auto expr_cell = dynamic_cast<const ExpressionCell*>(&expr)) {
+  if (const auto expr_int = D_CAST(ExpressionLiteral<int>, expr)) {
+    return MS_VO_T(int, expr_int->get_value());
+
+  } else if (const auto expr_int =
+                 D_CAST(ExpressionLiteral<std::string>, expr)) {
+    return MS_VO_T(std::string, expr_int->get_value());
+
+  } else if (const auto expr_int = D_CAST(ExpressionLiteral<bool>, expr)) {
+    return MS_VO_T(bool, expr_int->get_value());
+
+  } else if (const auto expr_int = D_CAST(ExpressionLiteral<FloatType>, expr)) {
+    return MS_VO_T(FloatType, expr_int->get_value());
+
+  } else if (const auto expr_cell = D_CAST(ExpressionCell, expr)) {
     return Evaluator::get_from_cells(*expr_cell, cells);
-  } else if (auto expr_prefix = dynamic_cast<const ExpressionPrefix*>(&expr)) {
+
+  } else if (const auto expr_prefix = D_CAST(ExpressionPrefix, expr)) {
     return Evaluator::eval_prefix(*expr_prefix, cells);
+
+  } else if (const auto expr_infix = D_CAST(ExpressionInfix, expr)) {
+    return Evaluator::eval_infix(*expr_infix, cells);
   }
 
-  return std::make_shared<NilObject>();
+  return MS_T(NilObject, );
 };
 
 MytObjectPtr Evaluator::get_from_cells(const ExpressionCell& expr_cell,
@@ -48,7 +60,7 @@ MytObjectPtr Evaluator::get_from_cells(const ExpressionCell& expr_cell,
   const auto cell_str = expr_cell.get_cell_token().literal;
   const auto cell_pos = CellPos{cell_str};
   if (!Evaluator::is_in_cells(cell_pos, cells)) {
-    return std::make_shared<NilObject>();
+    return MS_T(NilObject, );
   }
   const auto data_cell = cells.at(cell_pos);
   return data_cell.get_evaluated_content();
@@ -67,22 +79,51 @@ MytObjectPtr Evaluator::eval_prefix(const ExpressionPrefix& expr_prefix,
     default:
       assert(false && "Unreachable");
   }
-  return std::make_shared<NilObject>();
+  return MS_T(NilObject, );
 }
 
 MytObjectPtr Evaluator::eval_prefix_bang(MytObjectPtr obj) noexcept {
   if (auto bool_obj = std::dynamic_pointer_cast<ValueObject<bool>>(obj)) {
-    return std::make_shared<ValueObject<bool>>(!bool_obj->get_value());
+    return MS_VO_T(bool, !bool_obj->get_value());
   }
-  return obj;
+  return MS_T(ErrorObject, "Invalid prefix `!` argument");
 }
 
 MytObjectPtr Evaluator::eval_prefix_minus(MytObjectPtr obj) noexcept {
-  if (auto int_obj = std::dynamic_pointer_cast<ValueObject<int>>(obj)) {
-    return std::make_shared<ValueObject<int>>(-int_obj->get_value());
-  } else if (auto float_obj =
-                 std::dynamic_pointer_cast<ValueObject<FloatType>>(obj)) {
-    return std::make_shared<ValueObject<FloatType>>(-float_obj->get_value());
+  if (const auto int_obj = DP_CAST_VO_T(int, obj)) {
+    return MS_VO_T(int, -int_obj->get_value());
+  } else if (const auto float_obj = DP_CAST_VO_T(FloatType, obj)) {
+    return MS_VO_T(FloatType, -float_obj->get_value());
   }
-  return std::make_shared<ErrorObject>("Invalid prefix `-` argument");
+  return MS_T(ErrorObject, "Invalid prefix `-` argument");
+}
+
+MytObjectPtr Evaluator::eval_infix(const ExpressionInfix& expr_infix,
+                                   const CellMap& cells) noexcept {
+  const auto& expr_lhs = expr_infix.get_lhs_expression();
+  const auto& expr_rhs = expr_infix.get_rhs_expression();
+
+  auto lhs_obj = Evaluator::evaluate_expression(expr_lhs, cells);
+  auto rhs_obj = Evaluator::evaluate_expression(expr_rhs, cells);
+
+  const auto op_token = expr_infix.get_operator_token();
+  switch (op_token.type) {
+    case TokenType::Plus:
+      return lhs_obj->add(rhs_obj);
+    case TokenType::Minus:
+      return lhs_obj->sub(rhs_obj);
+    case TokenType::Asterisk:
+      return lhs_obj->mul(rhs_obj);
+    case TokenType::Slash:
+      if (const auto float_obj = DP_CAST_VO_T(FloatType, rhs_obj)) {
+        if (float_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
+      } else if (const auto int_obj = DP_CAST_VO_T(int, rhs_obj)) {
+        if (int_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
+      }
+      return lhs_obj->div(rhs_obj);
+    // TODO: CASE COLON
+    default:
+      return MS_T(ErrorObject, "Unimplemented operator " + op_token.literal);
+  }
+  return MS_T(NilObject, );
 }

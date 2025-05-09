@@ -49,23 +49,25 @@ class Expression {
   bool operator==(const Expression& other) const { return this->equals(other); }
 };
 
-template <class ExprType, class = typename std::enable_if<
-                              std::is_same<ExprType, bool>::value ||
-                              std::is_same<ExprType, int>::value ||
-                              std::is_same<ExprType, std::string>::value ||
-                              std::is_same<ExprType, FloatType>::value>::type>
+template <class ExprLiteralT,
+          class = typename std::enable_if<
+              std::is_same<ExprLiteralT, bool>::value ||
+              std::is_same<ExprLiteralT, int>::value ||
+              std::is_same<ExprLiteralT, std::string>::value ||
+              std::is_same<ExprLiteralT, FloatType>::value>::type>
 class ExpressionLiteral : public Expression {
  public:
   ExpressionLiteral() = delete;
-  ExpressionLiteral(const ExprType& value) : Expression(), m_value(value) {};
+  ExpressionLiteral(const ExprLiteralT& value)
+      : Expression(), m_value(value) {};
 
   std::string to_string() const override {
-    if constexpr (std::is_same_v<ExprType, bool>) {
+    if constexpr (std::is_same_v<ExprLiteralT, bool>) {
       return "bool(" + std::string(m_value ? "true" : "false") + ")";
-    } else if constexpr (std::is_same_v<ExprType, int> ||
-                         std::is_same_v<ExprType, FloatType>) {
+    } else if constexpr (std::is_same_v<ExprLiteralT, int> ||
+                         std::is_same_v<ExprLiteralT, FloatType>) {
       return "int(" + std::to_string(m_value) + ")";
-    } else if constexpr (std::is_same_v<ExprType, std::string>) {
+    } else if constexpr (std::is_same_v<ExprLiteralT, std::string>) {
       return "string(" + m_value + ")";
     }
     return "Unimplemented to_string() of this type";
@@ -73,14 +75,14 @@ class ExpressionLiteral : public Expression {
   bool equals(const Expression& other) const noexcept override {
     if (!AstUtils::same_hash_code(*this, other)) return false;
     const auto other_literal =
-        static_cast<const ExpressionLiteral<ExprType>*>(&other);
+        static_cast<const ExpressionLiteral<ExprLiteralT>*>(&other);
     return m_value == other_literal->get_value();
   }
 
-  const ExprType get_value() const noexcept { return m_value; };
+  const ExprLiteralT get_value() const noexcept { return m_value; };
 
  private:
-  ExprType m_value;
+  ExprLiteralT m_value;
 };
 
 class ExpressionIdentifier : public Expression {

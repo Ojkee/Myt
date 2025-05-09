@@ -15,8 +15,6 @@
 
 #include "myt_lang/myt_object.hpp"
 
-using MytObjectPtr = std::shared_ptr<MytObject>;
-
 using CellLimitType = uint16_t;
 
 class InvalidCellString : public std::exception {

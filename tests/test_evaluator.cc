@@ -1,6 +1,5 @@
 #include <memory>
 #include <tuple>
-#include <utility>
 
 #include "../extern/include/catch.hpp"
 #include "model/data_cell.hpp"
@@ -36,9 +35,8 @@ TEST_CASE("Basic Value Objects") {
                      CellMap{});
   cases.emplace_back(
       "= B22", std::make_unique<ValueObject<bool>>(true),
-      CellMap{std::make_pair(
-          CellPos{"B22"},
-          DataCell{"= true", std::make_unique<ValueObject<bool>>(true)})});
+      CellMap{{CellPos{"B22"},
+               DataCell{"= true", std::make_unique<ValueObject<bool>>(true)}}});
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);
@@ -61,6 +59,85 @@ TEST_CASE("Prefix Expressions to Objects") {
                      CellMap{});
   cases.emplace_back("= !false", std::make_unique<ValueObject<bool>>(true),
                      CellMap{});
+  cases.emplace_back(
+      "= !lmao", std::make_unique<ErrorObject>("Invalid prefix `!` argument"),
+      CellMap{});
+  cases.emplace_back(
+      "= -lmao", std::make_unique<ErrorObject>("Invalid prefix `-` argument"),
+      CellMap{});
+  cases.emplace_back(
+      "= -B3", std::make_unique<ValueObject<int>>(-5),
+      CellMap{{CellPos{"B3"},
+               DataCell{"= 5", std::make_unique<ValueObject<int>>(5)}}});
+  cases.emplace_back(
+      "= -ZZ3", std::make_unique<ValueObject<FloatType>>(-6.9),
+      CellMap{
+          {CellPos{"ZZ3"},
+           DataCell{"= 6.9", std::make_unique<ValueObject<FloatType>>(6.9)}}});
+  cases.emplace_back(
+      "= !ZZ3", std::make_unique<ValueObject<bool>>(false),
+      CellMap{{CellPos{"ZZ3"},
+               DataCell{"= true", std::make_unique<ValueObject<bool>>(true)}}});
+
+  for (const auto& [input, target, cells] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    const auto evaluated = Evaluator::evaluate(parsed, cells);
+    CHECK(*evaluated == *target);
+  }
+}
+
+#define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
+
+TEST_CASE("Infix Expressions to Objects") {
+  using inputType = std::string;
+  using targetType = MytObjectPtr;
+  using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
+
+  testCases cases{};
+  cases.emplace_back("= 1 + 6", std::make_unique<ValueObject<int>>(7),
+                     CellMap{});
+  cases.emplace_back("= 2.0 + 6.0",
+                     std::make_unique<ValueObject<FloatType>>(8.0), CellMap{});
+  cases.emplace_back("= 3.0 + 6", std::make_unique<ValueObject<FloatType>>(9.0),
+                     CellMap{});
+  cases.emplace_back("= 4 + 6.0",
+                     std::make_unique<ValueObject<FloatType>>(10.0), CellMap{});
+  cases.emplace_back("= \"lmao\" + \"6.0\"",
+                     std::make_unique<ValueObject<std::string>>("lmao6.0"),
+                     CellMap{});
+  cases.emplace_back("= 1 - 6", std::make_unique<ValueObject<int>>(-5),
+                     CellMap{});
+  cases.emplace_back("= 2.0 - 6.0",
+                     std::make_unique<ValueObject<FloatType>>(-4.0), CellMap{});
+  cases.emplace_back("= 3.0 - 6",
+                     std::make_unique<ValueObject<FloatType>>(-3.0), CellMap{});
+  cases.emplace_back("= 4 - 6.0",
+                     std::make_unique<ValueObject<FloatType>>(-2.0), CellMap{});
+  cases.emplace_back("= 1 * 6", std::make_unique<ValueObject<int>>(6),
+                     CellMap{});
+  cases.emplace_back("= 2.0 * 6.0",
+                     std::make_unique<ValueObject<FloatType>>(12.0), CellMap{});
+  cases.emplace_back("= 3.0 * 6",
+                     std::make_unique<ValueObject<FloatType>>(18.0), CellMap{});
+  cases.emplace_back("= 4 * 6.0",
+                     std::make_unique<ValueObject<FloatType>>(24.0), CellMap{});
+  cases.emplace_back("= 1 / 6", std::make_unique<ValueObject<int>>(0),
+                     CellMap{});
+  cases.emplace_back("= 2.0 / 6.0",
+                     std::make_unique<ValueObject<FloatType>>(2.0 / 6.0),
+                     CellMap{});
+  cases.emplace_back("= 3.0 / 6",
+                     std::make_unique<ValueObject<FloatType>>(3.0 / 6.0),
+                     CellMap{});
+  cases.emplace_back("= 4 / 6.0",
+                     std::make_unique<ValueObject<FloatType>>(4.0 / 6.0),
+                     CellMap{});
+  cases.emplace_back("= 4 / 6.0",
+                     std::make_unique<ValueObject<FloatType>>(4.0 / 6.0),
+                     CellMap{});
+  cases.emplace_back("= 4 / 0", ZERO_DIV_ERR, CellMap{});
+  cases.emplace_back("= 4.0 / 0.0", ZERO_DIV_ERR, CellMap{});
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);
