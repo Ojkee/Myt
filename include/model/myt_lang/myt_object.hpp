@@ -38,6 +38,8 @@ class ValueObject : public MytObject {
     assert(false && "Unreachable");
   };
 
+  [[nodiscard]] const ObjectType get_value() const noexcept { return m_value; };
+
  private:
   ObjectType m_value{};
 };

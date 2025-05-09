@@ -57,6 +57,10 @@ TEST_CASE("Prefix Expressions to Objects") {
   cases.emplace_back("= -5", std::make_unique<ValueObject<int>>(-5), CellMap{});
   cases.emplace_back("= -6.9", std::make_unique<ValueObject<FloatType>>(-6.9),
                      CellMap{});
+  cases.emplace_back("= !true", std::make_unique<ValueObject<bool>>(false),
+                     CellMap{});
+  cases.emplace_back("= !false", std::make_unique<ValueObject<bool>>(true),
+                     CellMap{});
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);

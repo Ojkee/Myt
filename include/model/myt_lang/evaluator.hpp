@@ -22,6 +22,9 @@ class Evaluator {
       const ExpressionCell& expr_cell, const CellMap& cells) noexcept;
   [[nodiscard]] static MytObjectPtr eval_prefix(
       const ExpressionPrefix& expr_prefix, const CellMap& cells) noexcept;
+  [[nodiscard]] static MytObjectPtr eval_prefix_bang(MytObjectPtr obj) noexcept;
+  [[nodiscard]] static MytObjectPtr eval_prefix_minus(
+      MytObjectPtr obj) noexcept;
 };
 
 #endif  // !EVALUATOR_HPP

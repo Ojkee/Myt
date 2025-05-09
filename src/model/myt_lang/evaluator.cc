@@ -61,10 +61,28 @@ MytObjectPtr Evaluator::eval_prefix(const ExpressionPrefix& expr_prefix,
   const auto prefix_type = expr_prefix.get_prefix_token().type;
   switch (prefix_type) {
     case TokenType::Bang:
+      return Evaluator::eval_prefix_bang(obj);
     case TokenType::Minus:
-      break;
+      return Evaluator::eval_prefix_minus(obj);
     default:
       assert(false && "Unreachable");
   }
   return std::make_shared<NilObject>();
+}
+
+MytObjectPtr Evaluator::eval_prefix_bang(MytObjectPtr obj) noexcept {
+  if (auto bool_obj = std::dynamic_pointer_cast<ValueObject<bool>>(obj)) {
+    return std::make_shared<ValueObject<bool>>(!bool_obj->get_value());
+  }
+  return obj;
+}
+
+MytObjectPtr Evaluator::eval_prefix_minus(MytObjectPtr obj) noexcept {
+  if (auto int_obj = std::dynamic_pointer_cast<ValueObject<int>>(obj)) {
+    return std::make_shared<ValueObject<int>>(-int_obj->get_value());
+  } else if (auto float_obj =
+                 std::dynamic_pointer_cast<ValueObject<FloatType>>(obj)) {
+    return std::make_shared<ValueObject<FloatType>>(-float_obj->get_value());
+  }
+  return std::make_shared<ErrorObject>("Invalid prefix `-` argument");
 }
