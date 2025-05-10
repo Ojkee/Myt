@@ -11,6 +11,7 @@
 
 #define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
 #define MS_T(T, value) std::make_shared<T>(value)
+#define D_CAST(T, expr) dynamic_cast<const T*>(expr)
 
 class MytObject;
 
@@ -110,30 +111,27 @@ class ValueObject : public MytObject {
     assert(false && "Unreachable");
   };
 
+#define LAMBDA_OP(op) [](const auto& a, const auto& b) { return a op b; }, "op"
+
   MytObjectPtr add(MytObjectPtr other) const noexcept override {
     if constexpr (std::is_same_v<ObjectType, std::string>) {
-      if (auto str_obj =
-              dynamic_cast<const ValueObject<std::string>*>(other.get())) {
+      if (auto str_obj = D_CAST(ValueObject<std::string>, other.get())) {
         return MS_VO_T(std::string, m_value + str_obj->get_value());
       }
     }
-    return numeric_operation(
-        other, [](const auto& a, const auto& b) { return a + b; }, "+");
+    return numeric_operation(other, LAMBDA_OP(+));
   }
 
   MytObjectPtr sub(MytObjectPtr other) const noexcept override {
-    return numeric_operation(
-        other, [](const auto& a, const auto& b) { return a - b; }, "-");
+    return numeric_operation(other, LAMBDA_OP(-));
   }
 
   MytObjectPtr mul(MytObjectPtr other) const noexcept override {
-    return numeric_operation(
-        other, [](const auto& a, const auto& b) { return a * b; }, "*");
+    return numeric_operation(other, LAMBDA_OP(*));
   }
 
   MytObjectPtr div(MytObjectPtr other) const noexcept override {
-    return numeric_operation(
-        other, [](const auto& a, const auto& b) { return a / b; }, "/");
+    return numeric_operation(other, LAMBDA_OP(/));
   }
 
   [[nodiscard]] const ObjectType get_value() const noexcept { return m_value; };
@@ -143,7 +141,7 @@ class ValueObject : public MytObject {
 
   template <typename Fn, typename = std::enable_if<std::is_invocable_v<Fn>>>
   MytObjectPtr numeric_operation(MytObjectPtr other, Fn&& op,
-                                 const std::string op_literal) const noexcept {
+                                 const std::string& op_literal) const noexcept {
     if (auto numeric_sub = apply_operation_on_numeric(other, op)) {
       return *numeric_sub;
     }
@@ -154,26 +152,24 @@ class ValueObject : public MytObject {
   std::optional<MytObjectPtr> apply_operation_on_numeric(
       MytObjectPtr other, Fn&& op) const noexcept {
     if constexpr (std::is_same_v<ObjectType, FloatType>) {
-      if (auto float_obj =
-              dynamic_cast<const ValueObject<FloatType>*>(other.get())) {
-        auto result =
-            op(static_cast<FloatType>(m_value), float_obj->get_value());
-        return MS_VO_T(FloatType, result);
-      } else if (auto int_obj =
-                     dynamic_cast<const ValueObject<int>*>(other.get())) {
-        auto result = op(m_value, static_cast<FloatType>(int_obj->get_value()));
-        return MS_VO_T(FloatType, result);
+      if (auto float_obj = D_CAST(ValueObject<FloatType>, other.get())) {
+        const auto a = static_cast<FloatType>(m_value);
+        const auto b = float_obj->get_value();
+        return MS_VO_T(FloatType, op(a, b));
+      } else if (auto int_obj = D_CAST(ValueObject<int>, other.get())) {
+        const auto a = m_value;
+        const auto b = static_cast<FloatType>(int_obj->get_value());
+        return MS_VO_T(FloatType, op(a, b));
       }
     } else if constexpr (std::is_same_v<ObjectType, int>) {
-      if (auto float_obj =
-              dynamic_cast<const ValueObject<FloatType>*>(other.get())) {
-        auto result =
-            op(static_cast<FloatType>(m_value), float_obj->get_value());
-        return MS_VO_T(FloatType, result);
-      } else if (auto int_obj =
-                     dynamic_cast<const ValueObject<int>*>(other.get())) {
-        auto result = op(m_value, int_obj->get_value());
-        return MS_VO_T(int, result);
+      if (auto float_obj = D_CAST(ValueObject<FloatType>, other.get())) {
+        const auto a = static_cast<FloatType>(m_value);
+        const auto b = float_obj->get_value();
+        return MS_VO_T(FloatType, op(a, b));
+      } else if (auto int_obj = D_CAST(ValueObject<int>, other.get())) {
+        const auto a = m_value;
+        const auto b = int_obj->get_value();
+        return MS_VO_T(int, op(a, b));
       }
     }
     return std::nullopt;

@@ -138,6 +138,14 @@ TEST_CASE("Infix Expressions to Objects") {
                      CellMap{});
   cases.emplace_back("= 4 / 0", ZERO_DIV_ERR, CellMap{});
   cases.emplace_back("= 4.0 / 0.0", ZERO_DIV_ERR, CellMap{});
+  cases.emplace_back(
+      "= B2 * A8", std::make_unique<ValueObject<FloatType>>(40.0),
+      CellMap{
+          {CellPos("B2"),
+           DataCell("= 8", std::make_unique<ValueObject<int>>(8))},
+          {CellPos("A8"),
+           DataCell("= 5.", std::make_unique<ValueObject<FloatType>>(5.0))},
+      });
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);

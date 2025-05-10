@@ -12,7 +12,7 @@
 
 #define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
 #define MS_T(T, value) std::make_shared<T>(value)
-#define D_CAST(T, expr) dynamic_cast<const T*>(&(expr))
+#define D_CAST(T, expr) dynamic_cast<const T*>(expr)
 #define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
 #define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
 
@@ -29,26 +29,27 @@ MytObjectPtr Evaluator::evaluate(const ParsingResult& parsed_result,
 
 MytObjectPtr Evaluator::evaluate_expression(const Expression& expr,
                                             const CellMap& cells) noexcept {
-  if (const auto expr_int = D_CAST(ExpressionLiteral<int>, expr)) {
+  if (const auto expr_int = D_CAST(ExpressionLiteral<int>, &expr)) {
     return MS_VO_T(int, expr_int->get_value());
 
   } else if (const auto expr_int =
-                 D_CAST(ExpressionLiteral<std::string>, expr)) {
+                 D_CAST(ExpressionLiteral<std::string>, &expr)) {
     return MS_VO_T(std::string, expr_int->get_value());
 
-  } else if (const auto expr_int = D_CAST(ExpressionLiteral<bool>, expr)) {
+  } else if (const auto expr_int = D_CAST(ExpressionLiteral<bool>, &expr)) {
     return MS_VO_T(bool, expr_int->get_value());
 
-  } else if (const auto expr_int = D_CAST(ExpressionLiteral<FloatType>, expr)) {
+  } else if (const auto expr_int =
+                 D_CAST(ExpressionLiteral<FloatType>, &expr)) {
     return MS_VO_T(FloatType, expr_int->get_value());
 
-  } else if (const auto expr_cell = D_CAST(ExpressionCell, expr)) {
+  } else if (const auto expr_cell = D_CAST(ExpressionCell, &expr)) {
     return Evaluator::get_from_cells(*expr_cell, cells);
 
-  } else if (const auto expr_prefix = D_CAST(ExpressionPrefix, expr)) {
+  } else if (const auto expr_prefix = D_CAST(ExpressionPrefix, &expr)) {
     return Evaluator::eval_prefix(*expr_prefix, cells);
 
-  } else if (const auto expr_infix = D_CAST(ExpressionInfix, expr)) {
+  } else if (const auto expr_infix = D_CAST(ExpressionInfix, &expr)) {
     return Evaluator::eval_infix(*expr_infix, cells);
   }
 
