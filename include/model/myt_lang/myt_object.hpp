@@ -22,14 +22,14 @@ class MytObject {
   virtual ~MytObject() = default;
   virtual const std::string to_string() const noexcept = 0;
 
-  bool operator==(const MytObject& other) const noexcept {
+  auto operator==(const MytObject& other) const noexcept -> bool {
     return this->to_string() == other.to_string();
   }
 
-  virtual MytObjectPtr add(MytObjectPtr other) const noexcept = 0;
-  virtual MytObjectPtr sub(MytObjectPtr other) const noexcept = 0;
-  virtual MytObjectPtr mul(MytObjectPtr other) const noexcept = 0;
-  virtual MytObjectPtr div(MytObjectPtr other) const noexcept = 0;
+  virtual auto add(MytObjectPtr other) const noexcept -> MytObjectPtr = 0;
+  virtual auto sub(MytObjectPtr other) const noexcept -> MytObjectPtr = 0;
+  virtual auto mul(MytObjectPtr other) const noexcept -> MytObjectPtr = 0;
+  virtual auto div(MytObjectPtr other) const noexcept -> MytObjectPtr = 0;
 };
 
 class ErrorObject : public MytObject {
@@ -37,24 +37,24 @@ class ErrorObject : public MytObject {
   ErrorObject() = delete;
   explicit ErrorObject(const std::string& value) : m_value(value) {};
 
-  [[nodiscard]] const std::string to_string() const noexcept override {
+  [[nodiscard]] auto to_string() const noexcept -> const std::string override {
     return "Error: `" + m_value + "`";
   };
 
-  MytObjectPtr add(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto add([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't add Error");
   }
-  MytObjectPtr sub(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto sub([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't sub Error");
   }
-  MytObjectPtr mul(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto mul([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't mul Error");
   }
-  MytObjectPtr div(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto div([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't div Error");
   }
 
@@ -65,24 +65,24 @@ class ErrorObject : public MytObject {
 class NilObject : public MytObject {
  public:
   explicit NilObject() = default;
-  [[nodiscard]] const std::string to_string() const noexcept override {
+  [[nodiscard]] auto to_string() const noexcept -> const std::string override {
     return "Nil";
   };
 
-  MytObjectPtr add(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto add([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't add Nil");
   }
-  MytObjectPtr sub(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto sub([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't sub Nil");
   }
-  MytObjectPtr mul(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto mul([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't mul Nil");
   }
-  MytObjectPtr div(
-      [[maybe_unused]] MytObjectPtr other) const noexcept override {
+  auto div([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't div Nil");
   }
 };
@@ -99,7 +99,7 @@ class ValueObject : public MytObject {
   explicit ValueObject(const ObjectType& value)
       : MytObject(), m_value(value) {};
 
-  [[nodiscard]] const std::string to_string() const noexcept override {
+  [[nodiscard]] auto to_string() const noexcept -> const std::string override {
     if constexpr (std::is_same_v<ObjectType, bool>) {
       return m_value ? "true" : "false";
     } else if constexpr (std::is_same_v<ObjectType, int> ||
@@ -113,7 +113,7 @@ class ValueObject : public MytObject {
 
 #define LAMBDA_OP(op) [](const auto& a, const auto& b) { return a op b; }, "op"
 
-  MytObjectPtr add(MytObjectPtr other) const noexcept override {
+  auto add(MytObjectPtr other) const noexcept -> MytObjectPtr override {
     if constexpr (std::is_same_v<ObjectType, std::string>) {
       if (auto str_obj = D_CAST(ValueObject<std::string>, other.get())) {
         return MS_VO_T(std::string, m_value + str_obj->get_value());
@@ -122,15 +122,15 @@ class ValueObject : public MytObject {
     return numeric_operation(other, LAMBDA_OP(+));
   }
 
-  MytObjectPtr sub(MytObjectPtr other) const noexcept override {
+  auto sub(MytObjectPtr other) const noexcept -> MytObjectPtr override {
     return numeric_operation(other, LAMBDA_OP(-));
   }
 
-  MytObjectPtr mul(MytObjectPtr other) const noexcept override {
+  auto mul(MytObjectPtr other) const noexcept -> MytObjectPtr override {
     return numeric_operation(other, LAMBDA_OP(*));
   }
 
-  MytObjectPtr div(MytObjectPtr other) const noexcept override {
+  auto div(MytObjectPtr other) const noexcept -> MytObjectPtr override {
     return numeric_operation(other, LAMBDA_OP(/));
   }
 
@@ -140,8 +140,9 @@ class ValueObject : public MytObject {
   ObjectType m_value{};
 
   template <typename Fn, typename = std::enable_if<std::is_invocable_v<Fn>>>
-  MytObjectPtr numeric_operation(MytObjectPtr other, Fn&& op,
-                                 const std::string& op_literal) const noexcept {
+  auto numeric_operation(MytObjectPtr other, Fn&& op,
+                         const std::string& op_literal) const noexcept
+      -> MytObjectPtr {
     if (auto numeric_sub = apply_operation_on_numeric(other, op)) {
       return *numeric_sub;
     }
@@ -149,8 +150,8 @@ class ValueObject : public MytObject {
   }
 
   template <typename Fn, typename = std::enable_if<std::is_invocable_v<Fn>>>
-  std::optional<MytObjectPtr> apply_operation_on_numeric(
-      MytObjectPtr other, Fn&& op) const noexcept {
+  auto apply_operation_on_numeric(MytObjectPtr other, Fn&& op) const noexcept
+      -> std::optional<MytObjectPtr> {
     if constexpr (std::is_same_v<ObjectType, FloatType>) {
       if (auto float_obj = D_CAST(ValueObject<FloatType>, other.get())) {
         const auto a = static_cast<FloatType>(m_value);

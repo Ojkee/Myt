@@ -8,16 +8,18 @@ class Window {
   explicit Window();
   explicit Window(int height, int width);
 
-  bool should_close() { return WindowShouldClose() && m_run; }
-  void close() { m_run = false; }
-  void render() noexcept;
+  auto should_close() const noexcept -> bool {
+    return WindowShouldClose() && m_run;
+  }
+  auto close() noexcept -> void { m_run = false; }
+  auto render() const noexcept -> void;
 
  private:
-  void init_window() noexcept;
+  auto init_window() noexcept -> void;
 
   bool m_run{true};
-  int m_height{800};
-  int m_width{800};
+  const int m_height{800};
+  const int m_width{800};
 
   // CONSTS
   const Color MYT_DARK_GRAY = Color{51, 51, 51, 255};

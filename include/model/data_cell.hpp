@@ -20,7 +20,7 @@ using CellLimitType = uint16_t;
 class InvalidCellString : public std::exception {
  public:
   InvalidCellString(const char* msg) : message(msg) {};
-  const char* what() const throw() { return message.c_str(); }
+  auto what() const throw() -> const char* { return message.c_str(); }
 
  private:
   std::string message{};
@@ -47,7 +47,7 @@ struct CellPos {
   CellLimitType col{};
   CellLimitType row{};
 
-  bool operator==(const CellPos& other) const {
+  auto operator==(const CellPos& other) const -> bool {
     return row == other.row && col == other.col;
   }
 
@@ -56,21 +56,21 @@ struct CellPos {
       std::numeric_limits<CellLimitType>::max();
   template <typename UnsignedType, typename = typename std::enable_if<
                                        std::is_unsigned_v<UnsignedType>>::type>
-  [[nodiscard]] constexpr static bool in_limit_range(
-      const UnsignedType& num) noexcept {
+  [[nodiscard]] constexpr static auto in_limit_range(
+      const UnsignedType& num) noexcept -> bool {
     return num <= max_limit;
   }
-  [[nodiscard]] CellLimitType convert_letters(
-      const std::string_view& valid_format_str,
-      const std::string_view& letters) const;
-  [[nodiscard]] CellLimitType convert_number(
-      const std::string_view& valid_format_str,
-      const std::string_view& number) const;
+  [[nodiscard]] auto convert_letters(const std::string_view& valid_format_str,
+                                     const std::string_view& letters) const
+      -> CellLimitType;
+  [[nodiscard]] auto convert_number(const std::string_view& valid_format_str,
+                                    const std::string_view& number) const
+      -> CellLimitType;
 };
 
 template <>
 struct std::hash<CellPos> {
-  std::size_t operator()(const CellPos& pos) const {
+  auto operator()(const CellPos& pos) const -> std::size_t {
     return std::hash<CellLimitType>()(pos.row) ^
            (std::hash<CellLimitType>()(pos.col) << 1);
   }
@@ -85,14 +85,14 @@ class DataCell {
   DataCell(DataCell&& other) noexcept = default;
   DataCell(const DataCell&) = default;
 
-  [[nodiscard]] std::string get_raw_content() const noexcept;
-  void set_raw_content(const std::string& value) noexcept;
+  [[nodiscard]] auto get_raw_content() const noexcept -> std::string;
+  auto set_raw_content(const std::string& value) noexcept -> void;
 
-  [[nodiscard]] const std::shared_ptr<MytObject> get_evaluated_content()
-      const noexcept;
-  void set_eval_content(MytObjectPtr&& value) noexcept;
+  [[nodiscard]] auto get_evaluated_content() const noexcept
+      -> const MytObjectPtr;
+  auto set_eval_content(MytObjectPtr&& value) noexcept -> void;
 
-  [[nodiscard]] const std::string to_string() const noexcept {
+  [[nodiscard]] auto to_string() const noexcept -> const std::string {
     return (m_evaluated_content != nullptr) ? m_evaluated_content->to_string()
                                             : "";
   };

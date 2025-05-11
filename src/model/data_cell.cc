@@ -4,8 +4,11 @@
 #include <cstdint>
 #include <string_view>
 
-CellLimitType CellPos::convert_number(const std::string_view& valid_format_str,
-                                      const std::string_view& number) const {
+#include "model/myt_lang/myt_object.hpp"
+
+auto CellPos::convert_number(const std::string_view& valid_format_str,
+                             const std::string_view& number) const
+    -> CellLimitType {
   const auto numbers_ull = std::stoull(number.data());
   if (!CellPos::in_limit_range(numbers_ull)) {
     const auto msg = "Invalid range in: `" + std::string(valid_format_str) +
@@ -15,8 +18,9 @@ CellLimitType CellPos::convert_number(const std::string_view& valid_format_str,
   return static_cast<CellLimitType>(numbers_ull);
 }
 
-CellLimitType CellPos::convert_letters(const std::string_view& valid_format_str,
-                                       const std::string_view& letters) const {
+auto CellPos::convert_letters(const std::string_view& valid_format_str,
+                              const std::string_view& letters) const
+    -> CellLimitType {
   const auto acc = [](const auto& s, const auto& e, uint32_t init,
                       const auto& op) {
     for (auto [it, idx] = std::tuple{s, uint32_t{}}; it != e; it++, idx++) {
@@ -25,7 +29,7 @@ CellLimitType CellPos::convert_letters(const std::string_view& valid_format_str,
     return init;
   };
   const auto index_op = [](const char& c, const auto& idx) {
-    return (uint32_t)(std::pow(26, idx) * (c - 'A' + 1));
+    return static_cast<uint32_t>(std::pow(26, idx) * (c - 'A' + 1));
   };
   const auto converted = acc(letters.rbegin(), letters.rend(), 0, index_op);
   if (!CellPos::in_limit_range(converted)) {
@@ -36,17 +40,18 @@ CellLimitType CellPos::convert_letters(const std::string_view& valid_format_str,
   return static_cast<CellLimitType>(converted);
 }
 
-std::string DataCell::get_raw_content() const noexcept { return m_raw_content; }
+auto DataCell::get_raw_content() const noexcept -> std::string {
+  return m_raw_content;
+}
 
-void DataCell::set_raw_content(const std::string& value) noexcept {
+auto DataCell::set_raw_content(const std::string& value) noexcept -> void {
   m_raw_content = value;
 }
 
-const std::shared_ptr<MytObject> DataCell::get_evaluated_content()
-    const noexcept {
+auto DataCell::get_evaluated_content() const noexcept -> const MytObjectPtr {
   return m_evaluated_content;
 }
 
-void DataCell::set_eval_content(MytObjectPtr&& value) noexcept {
+auto DataCell::set_eval_content(MytObjectPtr&& value) noexcept -> void {
   m_evaluated_content = std::move(value);
 }

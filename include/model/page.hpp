@@ -11,22 +11,22 @@ using CellMap = std::unordered_map<CellPos, DataCell>;
 
 class Page {
  public:
-  Page();
+  Page() = default;
 
-  [[nodiscard]] bool is_running() noexcept { return m_is_running; }
-  void stop_running() noexcept { m_is_running = false; }
-  [[nodiscard]] bool cell_exists(const CellPos& pos) const noexcept;
-  [[nodiscard]] std::optional<std::string> get_cell_raw_content(
-      const CellPos& pos) const noexcept;
+  [[nodiscard]] auto is_running() noexcept -> bool { return m_is_running; }
+  auto stop_running() noexcept -> void { m_is_running = false; }
+  [[nodiscard]] auto cell_exists(const CellPos& pos) const noexcept -> bool;
+  [[nodiscard]] auto get_cell_raw_content(const CellPos& pos) const noexcept
+      -> std::optional<std::string>;
 
-  void eval_cell(const CellPos& pos) noexcept;
-  void erase_cell(const CellPos& pos) noexcept;
+  auto eval_cell(const CellPos& pos) noexcept -> void;
+  auto erase_cell(const CellPos& pos) noexcept -> void;
 
  private:
   void save_eval_cell();
 
   bool m_is_running{true};
-  CellMap m_cells;
+  CellMap m_cells{};
 };
 
 #endif  // !STATE_HPP

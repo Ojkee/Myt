@@ -16,8 +16,8 @@
 #define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
 #define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
 
-MytObjectPtr Evaluator::evaluate(const ParsingResult& parsed_result,
-                                 const CellMap& cells) noexcept {
+auto Evaluator::evaluate(const ParsingResult& parsed_result,
+                         const CellMap& cells) noexcept -> MytObjectPtr {
   if (std::holds_alternative<ParsingError>(parsed_result)) {
     const auto err = &std::get<ParsingError>(parsed_result);
     return MS_T(ErrorObject, err->content);
@@ -27,8 +27,9 @@ MytObjectPtr Evaluator::evaluate(const ParsingResult& parsed_result,
   return Evaluator::evaluate_expression(*expr, cells);
 }
 
-MytObjectPtr Evaluator::evaluate_expression(const Expression& expr,
-                                            const CellMap& cells) noexcept {
+auto Evaluator::evaluate_expression(const Expression& expr,
+                                    const CellMap& cells) noexcept
+    -> MytObjectPtr {
   if (const auto expr_int = D_CAST(ExpressionLiteral<int>, &expr)) {
     return MS_VO_T(int, expr_int->get_value());
 
@@ -56,8 +57,8 @@ MytObjectPtr Evaluator::evaluate_expression(const Expression& expr,
   return MS_T(NilObject, );
 };
 
-MytObjectPtr Evaluator::get_from_cells(const ExpressionCell& expr_cell,
-                                       const CellMap& cells) noexcept {
+auto Evaluator::get_from_cells(const ExpressionCell& expr_cell,
+                               const CellMap& cells) noexcept -> MytObjectPtr {
   const auto cell_str = expr_cell.get_cell_token().literal;
   const auto cell_pos = CellPos{cell_str};
   if (!Evaluator::is_in_cells(cell_pos, cells)) {
@@ -67,8 +68,8 @@ MytObjectPtr Evaluator::get_from_cells(const ExpressionCell& expr_cell,
   return data_cell.get_evaluated_content();
 }
 
-MytObjectPtr Evaluator::eval_prefix(const ExpressionPrefix& expr_prefix,
-                                    const CellMap& cells) noexcept {
+auto Evaluator::eval_prefix(const ExpressionPrefix& expr_prefix,
+                            const CellMap& cells) noexcept -> MytObjectPtr {
   const auto& expr_ref = expr_prefix.get_expression();
   const auto obj = Evaluator::evaluate_expression(expr_ref, cells);
   const auto prefix_type = expr_prefix.get_prefix_token().type;
@@ -83,14 +84,14 @@ MytObjectPtr Evaluator::eval_prefix(const ExpressionPrefix& expr_prefix,
   return MS_T(NilObject, );
 }
 
-MytObjectPtr Evaluator::eval_prefix_bang(MytObjectPtr obj) noexcept {
+auto Evaluator::eval_prefix_bang(MytObjectPtr obj) noexcept -> MytObjectPtr {
   if (auto bool_obj = std::dynamic_pointer_cast<ValueObject<bool>>(obj)) {
     return MS_VO_T(bool, !bool_obj->get_value());
   }
   return MS_T(ErrorObject, "Invalid prefix `!` argument");
 }
 
-MytObjectPtr Evaluator::eval_prefix_minus(MytObjectPtr obj) noexcept {
+auto Evaluator::eval_prefix_minus(MytObjectPtr obj) noexcept -> MytObjectPtr {
   if (const auto int_obj = DP_CAST_VO_T(int, obj)) {
     return MS_VO_T(int, -int_obj->get_value());
   } else if (const auto float_obj = DP_CAST_VO_T(FloatType, obj)) {
@@ -99,8 +100,8 @@ MytObjectPtr Evaluator::eval_prefix_minus(MytObjectPtr obj) noexcept {
   return MS_T(ErrorObject, "Invalid prefix `-` argument");
 }
 
-MytObjectPtr Evaluator::eval_infix(const ExpressionInfix& expr_infix,
-                                   const CellMap& cells) noexcept {
+auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
+                           const CellMap& cells) noexcept -> MytObjectPtr {
   const auto& expr_lhs = expr_infix.get_lhs_expression();
   const auto& expr_rhs = expr_infix.get_rhs_expression();
 

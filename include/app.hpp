@@ -6,13 +6,13 @@
 
 class MytApp {
  public:
-  MytApp();
+  MytApp() = default;
 
-  void run() noexcept;
+  auto run() noexcept -> void;
 
  private:
-  Window m_window;
-  InputHandler m_input_handler;
+  Window m_window{};
+  InputHandler m_input_handler{};
 };
 
 #endif  // !APP_HPP

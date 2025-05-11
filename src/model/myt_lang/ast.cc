@@ -1,6 +1,7 @@
 #include "../../../include/model/myt_lang/ast.hpp"
 
-Precendence AstUtils::token_to_precendece(const TokenType& type) noexcept {
+auto AstUtils::token_to_precendece(const TokenType& type) noexcept
+    -> Precendence {
   switch (type) {
     case TokenType::Eq:
     case TokenType::NotEq:
@@ -25,7 +26,7 @@ Precendence AstUtils::token_to_precendece(const TokenType& type) noexcept {
   }
 }
 
-bool AstUtils::same_hash_code(const Expression& lhs,
-                              const Expression& rhs) noexcept {
+auto AstUtils::same_hash_code(const Expression& lhs,
+                              const Expression& rhs) noexcept -> bool {
   return typeid(lhs).hash_code() == typeid(rhs).hash_code();
 }

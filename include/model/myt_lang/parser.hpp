@@ -19,46 +19,56 @@ using InfixFn = std::function<ParsingResult(
 
 class Parser {
  public:
-  [[nodiscard]] static ParsingResult parse(const Tokens& tokens) noexcept;
-  void static print_result(const ParsingResult& result) noexcept;
+  [[nodiscard]] static auto parse(const Tokens& tokens) noexcept
+      -> ParsingResult;
+  static auto print_result(const ParsingResult& result) noexcept -> void;
 
  private:
   template <class FnType>
-  [[nodiscard]] static bool is_in_fns(
+  [[nodiscard]] static auto is_in_fns(
       const std::unordered_map<TokenType, FnType>& fns,
-      const TokenType& type) noexcept {
+      const TokenType& type) noexcept -> bool {
     return fns.find(type) != fns.end();
   }
-  [[nodiscard]] static ParsingResult parse_expression(
+  [[nodiscard]] static auto parse_expression(
       std::size_t& token_idx, const Tokens& tokens,
-      const Precendence&& precendence) noexcept;
-  [[nodiscard]] static ParsingResult parse_prefix_fn(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] const static std::string concat_token_literals(
-      const std::size_t& start_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static bool is_precendence_higher(
+      const Precendence&& precendence) noexcept -> ParsingResult;
+  [[nodiscard]] static auto parse_prefix_fn(std::size_t& token_idx,
+                                            const Tokens& tokens) noexcept
+      -> ParsingResult;
+  [[nodiscard]] static auto concat_token_literals(const std::size_t& start_idx,
+                                                  const Tokens& tokens) noexcept
+      -> const std::string;
+  [[nodiscard]] static auto is_precendence_higher(
       const std::size_t& token_idx, const Tokens& tokens,
-      const Precendence& precendence) noexcept;
-  [[nodiscard]] static ArgumentsResult parse_call_arguments(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
+      const Precendence& precendence) noexcept -> bool;
+  [[nodiscard]] static auto parse_call_arguments(std::size_t& token_idx,
+                                                 const Tokens& tokens) noexcept
+      -> ArgumentsResult;
 
   // PREFIX
-  [[nodiscard]] static ParsingResult parse_prefix_expression(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ExpressionPtr parse_identifier(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ExpressionPtr parse_cell_identifier(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_int_literal(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_float_literal(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_bool_literal(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_string_literal(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_grouped_expression(
-      std::size_t& token_idx, const Tokens& tokens) noexcept;
+  [[nodiscard]] static auto parse_prefix_expression(
+      std::size_t& token_idx, const Tokens& tokens) noexcept -> ParsingResult;
+  [[nodiscard]] static auto parse_identifier(std::size_t& token_idx,
+                                             const Tokens& tokens) noexcept
+      -> ExpressionPtr;
+  [[nodiscard]] static auto parse_cell_identifier(std::size_t& token_idx,
+                                                  const Tokens& tokens) noexcept
+      -> ExpressionPtr;
+  [[nodiscard]] static auto parse_int_literal(std::size_t& token_idx,
+                                              const Tokens& tokens) noexcept
+      -> ParsingResult;
+  [[nodiscard]] static auto parse_float_literal(std::size_t& token_idx,
+                                                const Tokens& tokens) noexcept
+      -> ParsingResult;
+  [[nodiscard]] static auto parse_bool_literal(std::size_t& token_idx,
+                                               const Tokens& tokens) noexcept
+      -> ParsingResult;
+  [[nodiscard]] static auto parse_string_literal(std::size_t& token_idx,
+                                                 const Tokens& tokens) noexcept
+      -> ParsingResult;
+  [[nodiscard]] static auto parse_grouped_expression(
+      std::size_t& token_idx, const Tokens& tokens) noexcept -> ParsingResult;
 
   inline static const std::unordered_map<TokenType, PrefixFn> prefix_fns = {
       {TokenType::Minus, parse_prefix_expression},
@@ -73,12 +83,12 @@ class Parser {
   };
 
   // INFIX
-  [[nodiscard]] static ParsingResult parse_infix_expression(
+  [[nodiscard]] static auto parse_infix_expression(
       ExpressionPtr lhs_expression, std::size_t& token_idx,
-      const Tokens& tokens) noexcept;
-  [[nodiscard]] static ParsingResult parse_fn_call_expression(
+      const Tokens& tokens) noexcept -> ParsingResult;
+  [[nodiscard]] static auto parse_fn_call_expression(
       ExpressionPtr lhs_expression, std::size_t& token_idx,
-      const Tokens& tokens) noexcept;
+      const Tokens& tokens) noexcept -> ParsingResult;
 
   inline static const std::unordered_map<TokenType, InfixFn> infix_fns = {
       {TokenType::Plus, parse_infix_expression},

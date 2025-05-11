@@ -154,3 +154,20 @@ TEST_CASE("Infix Expressions to Objects") {
     CHECK(*evaluated == *target);
   }
 }
+
+TEST_CASE("Call Expressions to Objects") {
+  using inputType = std::string;
+  using targetType = MytObjectPtr;
+  using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
+
+  testCases cases{};
+  cases.emplace_back("= add(5, 3)", std::make_unique<ValueObject<int>>(8),
+                     CellMap{});
+
+  for (const auto& [input, target, cells] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    const auto evaluated = Evaluator::evaluate(parsed, cells);
+    CHECK(*evaluated == *target);
+  }
+}

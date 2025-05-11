@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-std::vector<Token> Lexer::tokenize(
-    const std::string_view& raw_content) noexcept {
+auto Lexer::tokenize(const std::string_view& raw_content) noexcept
+    -> std::vector<Token> {
   const auto not_qoute = [](const char& c) { return c != '\"'; };
 
   std::vector<Token> tokens{};
@@ -59,7 +59,8 @@ std::vector<Token> Lexer::tokenize(
   return tokens;
 }
 
-std::string Lexer::tokens_to_string(const std::vector<Token>& tokens) noexcept {
+auto Lexer::tokens_to_string(const std::vector<Token>& tokens) noexcept
+    -> std::string {
   if (tokens.empty()) return "No tokens";
   if (tokens.size() == 1) return std::string(tokens[0]);
   auto new_line_fold = [](std::string lhs, const Token& tok) {
@@ -69,24 +70,27 @@ std::string Lexer::tokens_to_string(const std::vector<Token>& tokens) noexcept {
                          std::string(tokens[0]), new_line_fold);
 }
 
-constexpr inline bool Lexer::is_whitespace(const char& c) noexcept {
+constexpr inline auto Lexer::is_whitespace(const char& c) noexcept -> bool {
   return c == ' ' || c == '\n' || c == '\t' || c == '\r';
 }
 
-constexpr inline bool Lexer::is_identifier_char(const char& c) noexcept {
+constexpr inline auto Lexer::is_identifier_char(const char& c) noexcept
+    -> bool {
   return std::isalpha(c) || c == '_';
 }
 
-constexpr inline bool Lexer::is_cell_identifier_char(const char& c) noexcept {
+constexpr inline auto Lexer::is_cell_identifier_char(const char& c) noexcept
+    -> bool {
   return std::isalpha(c) && std::isupper(c);
 }
 
-constexpr inline bool Lexer::is_numeric(const char& c) noexcept {
+constexpr inline auto Lexer::is_numeric(const char& c) noexcept -> bool {
   return std::isdigit(c);
 }
 
-std::optional<Token> Lexer::get_sign_token(
-    const std::string_view& content, std::string_view::iterator& cur) noexcept {
+auto Lexer::get_sign_token(const std::string_view& content,
+                           std::string_view::iterator& cur) noexcept
+    -> std::optional<Token> {
   switch (*cur) {
     case '=':
       if (cur + 1 != content.end() && *(cur + 1) == '=') {
@@ -132,9 +136,10 @@ std::optional<Token> Lexer::get_sign_token(
   return std::nullopt;
 }
 
-std::optional<std::string_view> Lexer::read_forward_if(
-    const std::string_view& content, std::string_view::iterator& cur_it,
-    const Condition& cond) noexcept {
+auto Lexer::read_forward_if(const std::string_view& content,
+                            std::string_view::iterator& cur_it,
+                            const Condition& cond) noexcept
+    -> std::optional<std::string_view> {
   auto start = cur_it;
   std::size_t len{0};
   while (cur_it != content.end() && cond(*cur_it)) {
@@ -148,9 +153,9 @@ std::optional<std::string_view> Lexer::read_forward_if(
   return std::nullopt;
 }
 
-std::optional<std::string_view> Lexer::read_cell_indent(
-    const std::string_view& content,
-    std::string_view::iterator& cur_it) noexcept {
+auto Lexer::read_cell_indent(const std::string_view& content,
+                             std::string_view::iterator& cur_it) noexcept
+    -> std::optional<std::string_view> {
   bool started_letter_idx{false}, started_number_idx{false};
 
   const auto start = cur_it;
@@ -182,9 +187,9 @@ std::optional<std::string_view> Lexer::read_cell_indent(
   return std::nullopt;
 }
 
-std::optional<std::string_view> Lexer::read_float(
-    const std::string_view& content,
-    std::string_view::iterator& cur_it) noexcept {
+auto Lexer::read_float(const std::string_view& content,
+                       std::string_view::iterator& cur_it) noexcept
+    -> std::optional<std::string_view> {
   const auto start = cur_it;
   auto it = cur_it;
   bool seen_dot{false};
@@ -208,13 +213,13 @@ std::optional<std::string_view> Lexer::read_float(
   return std::string_view{start, len};
 }
 
-bool Lexer::is_keyword(const std::string& ident) noexcept {
+auto Lexer::is_keyword(const std::string& ident) noexcept -> bool {
   return TokenUtils::keywordsLookup.find(ident) !=
          TokenUtils::keywordsLookup.end();
 }
 
-std::optional<TokenType> Lexer::get_token_type_keyword(
-    const std::string& ident) noexcept {
+auto Lexer::get_token_type_keyword(const std::string& ident) noexcept
+    -> std::optional<TokenType> {
   if (!is_keyword(ident)) return std::nullopt;
   return TokenUtils::keywordsLookup.at(ident);
 }

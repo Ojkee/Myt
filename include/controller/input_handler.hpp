@@ -7,10 +7,10 @@ class InputHandler {
  public:
   explicit InputHandler();
 
-  void check_event();
+  auto check_event() -> void;
 
  private:
-  Page m_page = Page();
+  Page m_page{};
 };
 
 #endif  // !INPUT_HANDLER_HPP

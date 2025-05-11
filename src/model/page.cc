@@ -5,8 +5,6 @@
 #include "../../include/model/myt_lang/lexer.hpp"
 #include "../../include/model/myt_lang/parser.hpp"
 
-Page::Page() : m_cells() {}
-
 std::optional<std::string> Page::get_cell_raw_content(
     const CellPos& pos) const noexcept {
   if (cell_exists(pos)) {

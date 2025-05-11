@@ -12,7 +12,7 @@
 #include "model/myt_lang/ast.hpp"
 #include "model/myt_lang/token.hpp"
 
-void Parser::print_result(const ParsingResult& result) noexcept {
+auto Parser::print_result(const ParsingResult& result) noexcept -> void {
   if (std::holds_alternative<ParsingError>(result)) {
     const auto err = std::get<ParsingError>(result);
     std::cout << err.content << "\n";
@@ -22,7 +22,7 @@ void Parser::print_result(const ParsingResult& result) noexcept {
   std::cout << expr->get()->to_string() << "\n";
 }
 
-ParsingResult Parser::parse(const Tokens& tokens) noexcept {
+auto Parser::parse(const Tokens& tokens) noexcept -> ParsingResult {
   if (tokens.size() == 0) {
     return std::make_unique<ExpressionLiteral<std::string>>("");
   }
@@ -40,9 +40,9 @@ ParsingResult Parser::parse(const Tokens& tokens) noexcept {
   return expr_result;
 }
 
-ParsingResult Parser::parse_expression(
-    std::size_t& token_idx, const Tokens& tokens,
-    const Precendence&& precendence) noexcept {
+auto Parser::parse_expression(std::size_t& token_idx, const Tokens& tokens,
+                              const Precendence&& precendence) noexcept
+    -> ParsingResult {
   auto lhs_result = Parser::parse_prefix_fn(token_idx, tokens);
   if (std::holds_alternative<ParsingError>(lhs_result)) {
     return lhs_result;
@@ -64,8 +64,8 @@ ParsingResult Parser::parse_expression(
   return lhs_result;
 }
 
-ParsingResult Parser::parse_prefix_fn(std::size_t& token_idx,
-                                      const Tokens& tokens) noexcept {
+auto Parser::parse_prefix_fn(std::size_t& token_idx,
+                             const Tokens& tokens) noexcept -> ParsingResult {
   const auto current_token = tokens.at(token_idx);
   if (Parser::is_in_fns(prefix_fns, current_token.type)) {
     const auto prefixFn = prefix_fns.at(current_token.type);
@@ -75,8 +75,9 @@ ParsingResult Parser::parse_prefix_fn(std::size_t& token_idx,
                       "` not implemented"};
 }
 
-const std::string Parser::concat_token_literals(const std::size_t& start_idx,
-                                                const Tokens& tokens) noexcept {
+auto Parser::concat_token_literals(const std::size_t& start_idx,
+                                   const Tokens& tokens) noexcept
+    -> const std::string {
   if (tokens.empty() || (start_idx >= tokens.size()) ||
       (tokens.size() == 1 && tokens[0].type == TokenType::EndOfCell)) {
     return "";
@@ -90,16 +91,18 @@ const std::string Parser::concat_token_literals(const std::size_t& start_idx,
                          concat_space_fold);
 }
 
-bool Parser::is_precendence_higher(const std::size_t& token_idx,
+auto Parser::is_precendence_higher(const std::size_t& token_idx,
                                    const Tokens& tokens,
-                                   const Precendence& precendence) noexcept {
+                                   const Precendence& precendence) noexcept
+    -> bool {
   const auto next_token_type = tokens.at(token_idx).type;
   const auto peek_precendence = AstUtils::token_to_precendece(next_token_type);
   return precendence < peek_precendence;
 }
 
-ArgumentsResult Parser::parse_call_arguments(std::size_t& token_idx,
-                                             const Tokens& tokens) noexcept {
+auto Parser::parse_call_arguments(std::size_t& token_idx,
+                                  const Tokens& tokens) noexcept
+    -> ArgumentsResult {
   Arguments args{};
   if (tokens.at(token_idx).type == TokenType::RParen) {
     token_idx++;
@@ -136,8 +139,9 @@ ArgumentsResult Parser::parse_call_arguments(std::size_t& token_idx,
 }
 
 // PREFIX
-ParsingResult Parser::parse_prefix_expression(std::size_t& token_idx,
-                                              const Tokens& tokens) noexcept {
+auto Parser::parse_prefix_expression(std::size_t& token_idx,
+                                     const Tokens& tokens) noexcept
+    -> ParsingResult {
   const auto prefix_token = tokens.at(token_idx++);
   auto rhs_result =
       Parser::parse_expression(token_idx, tokens, Precendence::Prefix);
@@ -149,20 +153,21 @@ ParsingResult Parser::parse_prefix_expression(std::size_t& token_idx,
                                             std::move(*rhs_expression));
 }
 
-ExpressionPtr Parser::parse_identifier(std::size_t& token_idx,
-                                       const Tokens& tokens) noexcept {
+auto Parser::parse_identifier(std::size_t& token_idx,
+                              const Tokens& tokens) noexcept -> ExpressionPtr {
   const auto token = tokens.at(token_idx++);
   return std::make_unique<ExpressionIdentifier>(token);
 }
 
-ExpressionPtr Parser::parse_cell_identifier(std::size_t& token_idx,
-                                            const Tokens& tokens) noexcept {
+auto Parser::parse_cell_identifier(std::size_t& token_idx,
+                                   const Tokens& tokens) noexcept
+    -> ExpressionPtr {
   const auto cell_token = tokens.at(token_idx++);
   return std::make_unique<ExpressionCell>(cell_token);
 }
 
-ParsingResult Parser::parse_int_literal(std::size_t& token_idx,
-                                        const Tokens& tokens) noexcept {
+auto Parser::parse_int_literal(std::size_t& token_idx,
+                               const Tokens& tokens) noexcept -> ParsingResult {
   const auto int_token = tokens.at(token_idx++);
   try {
     const auto tokenValue = std::stoi(int_token.literal);
@@ -176,28 +181,32 @@ ParsingResult Parser::parse_int_literal(std::size_t& token_idx,
   }
 }
 
-ParsingResult Parser::parse_float_literal(std::size_t& token_idx,
-                                          const Tokens& tokens) noexcept {
+auto Parser::parse_float_literal(std::size_t& token_idx,
+                                 const Tokens& tokens) noexcept
+    -> ParsingResult {
   const auto float_token = tokens.at(token_idx++);
   const auto value = std::stod(float_token.literal);
   const auto value_correct_type = static_cast<FloatType>(value);
   return std::make_unique<ExpressionLiteral<FloatType>>(value_correct_type);
 }
 
-ParsingResult Parser::parse_bool_literal(std::size_t& token_idx,
-                                         const Tokens& tokens) noexcept {
+auto Parser::parse_bool_literal(std::size_t& token_idx,
+                                const Tokens& tokens) noexcept
+    -> ParsingResult {
   const auto token_value = tokens.at(token_idx++).literal == "true";
   return std::make_unique<ExpressionLiteral<bool>>(token_value);
 }
 
-ParsingResult Parser::parse_string_literal(std::size_t& token_idx,
-                                           const Tokens& tokens) noexcept {
+auto Parser::parse_string_literal(std::size_t& token_idx,
+                                  const Tokens& tokens) noexcept
+    -> ParsingResult {
   const auto token_value = tokens.at(token_idx++).literal;
   return std::make_unique<ExpressionLiteral<std::string>>(token_value);
 }
 
-ParsingResult Parser::parse_grouped_expression(std::size_t& token_idx,
-                                               const Tokens& tokens) noexcept {
+auto Parser::parse_grouped_expression(std::size_t& token_idx,
+                                      const Tokens& tokens) noexcept
+    -> ParsingResult {
   auto expr =
       Parser::parse_expression(++token_idx, tokens, Precendence::Lowest);
   if (tokens.at(token_idx).type != TokenType::RParen) {
@@ -209,9 +218,10 @@ ParsingResult Parser::parse_grouped_expression(std::size_t& token_idx,
 }
 
 // INFIX
-ParsingResult Parser::parse_infix_expression(ExpressionPtr lhs_expression,
-                                             std::size_t& token_idx,
-                                             const Tokens& tokens) noexcept {
+auto Parser::parse_infix_expression(ExpressionPtr lhs_expression,
+                                    std::size_t& token_idx,
+                                    const Tokens& tokens) noexcept
+    -> ParsingResult {
   const auto operator_token = tokens.at(token_idx++);
   const auto precendence = AstUtils::token_to_precendece(operator_token.type);
   auto rhs_result =
@@ -224,9 +234,10 @@ ParsingResult Parser::parse_infix_expression(ExpressionPtr lhs_expression,
       std::move(lhs_expression), operator_token, std::move(*rhs_expression));
 }
 
-ParsingResult Parser::parse_fn_call_expression(ExpressionPtr lhs_expression,
-                                               std::size_t& token_idx,
-                                               const Tokens& tokens) noexcept {
+auto Parser::parse_fn_call_expression(ExpressionPtr lhs_expression,
+                                      std::size_t& token_idx,
+                                      const Tokens& tokens) noexcept
+    -> ParsingResult {
   auto args_result = Parser::parse_call_arguments(++token_idx, tokens);
   if (std::holds_alternative<ParsingError>(args_result)) {
     return std::get<ParsingError>(args_result);
