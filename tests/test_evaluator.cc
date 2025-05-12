@@ -146,6 +146,62 @@ TEST_CASE("Infix Expressions to Objects") {
           {CellPos("A8"),
            DataCell("= 5.", std::make_unique<ValueObject<FloatType>>(5.0))},
       });
+  cases.emplace_back(
+      "= B2:B4",
+      std::make_unique<CellRangeObject>(
+          "B2:B4",
+          std::vector<MytObjectPtr>{
+              std::make_shared<ValueObject<int>>(4),
+              std::make_shared<ValueObject<int>>(5),
+              std::make_shared<ValueObject<int>>(6),
+          }),
+      CellMap{
+          {CellPos("A2"),
+           DataCell("= 1", std::make_shared<ValueObject<int>>(1))},
+          {CellPos("A3"),
+           DataCell("= 2", std::make_shared<ValueObject<int>>(2))},
+          {CellPos("B1"),
+           DataCell("= 3", std::make_shared<ValueObject<int>>(3))},
+          {CellPos("B2"),
+           DataCell("= 4", std::make_shared<ValueObject<int>>(4))},
+          {CellPos("B3"),
+           DataCell("= 5", std::make_shared<ValueObject<int>>(5))},
+          {CellPos("B4"),
+           DataCell("= 6", std::make_shared<ValueObject<int>>(6))},
+          {CellPos("B5"),
+           DataCell("= 7", std::make_shared<ValueObject<int>>(7))},
+          {CellPos("C3"),
+           DataCell("= 8", std::make_shared<ValueObject<int>>(8))},
+      });
+  cases.emplace_back(
+      "= B2:D2",
+      std::make_unique<CellRangeObject>(
+          "B2:D2",
+          std::vector<MytObjectPtr>{
+              std::make_shared<ValueObject<int>>(4),
+              std::make_shared<ValueObject<int>>(7),
+              std::make_shared<ValueObject<int>>(8),
+          }),
+      CellMap{
+          {CellPos("A2"),
+           DataCell("= 1", std::make_shared<ValueObject<int>>(1))},
+          {CellPos("A3"),
+           DataCell("= 2", std::make_shared<ValueObject<int>>(2))},
+          {CellPos("B1"),
+           DataCell("= 3", std::make_shared<ValueObject<int>>(3))},
+          {CellPos("B2"),
+           DataCell("= 4", std::make_shared<ValueObject<int>>(4))},
+          {CellPos("B3"),
+           DataCell("= 5", std::make_shared<ValueObject<int>>(5))},
+          {CellPos("B4"),
+           DataCell("= 6", std::make_shared<ValueObject<int>>(6))},
+          {CellPos("C2"),
+           DataCell("= 7", std::make_shared<ValueObject<int>>(7))},
+          {CellPos("D2"),
+           DataCell("= 8", std::make_shared<ValueObject<int>>(8))},
+          {CellPos("E2"),
+           DataCell("= 9", std::make_shared<ValueObject<int>>(9))},
+      });
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);

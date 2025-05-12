@@ -1,9 +1,10 @@
 #include "../../../include/model/myt_lang/evaluator.hpp"
 
 #include <cassert>
-#include <iostream>
 #include <memory>
+#include <tuple>
 #include <variant>
+#include <vector>
 
 #include "model/data_cell.hpp"
 #include "model/myt_lang/ast.hpp"
@@ -135,11 +136,41 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
         if (int_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
       }
       return lhs_obj->div(rhs_obj);
-    // TODO: CASE COLON
+    case TokenType::Colon:
+      if (auto lhs_cell = D_CAST(ExpressionCell, &expr_lhs)) {
+        if (auto rhs_cell = D_CAST(ExpressionCell, &expr_rhs)) {
+          return Evaluator::eval_infix_colon(*lhs_cell, *rhs_cell, cells);
+        } else {
+          return MS_T(ErrorObject, "Wrong type");
+        }
+      } else {
+        return MS_T(ErrorObject, "Wrong type");
+      }
     default:
       return MS_T(ErrorObject, "Unimplemented operator " + op_token.literal);
   }
   return MS_T(NilObject, );
+}
+
+auto Evaluator::eval_infix_colon(const ExpressionCell& lhs_cell,
+                                 const ExpressionCell& rhs_cell,
+                                 const CellMap& cells) noexcept
+    -> MytObjectPtr {
+  const auto lhs_pos_str = lhs_cell.get_cell_token().literal;
+  const auto rhs_pos_str = rhs_cell.get_cell_token().literal;
+
+  const auto pos_a = CellPos{lhs_pos_str};
+  const auto pos_b = CellPos{rhs_pos_str};
+
+  const auto [lhs_pos, rhs_pos, lhs_str, rhs_str] =
+      (pos_a < pos_b) ? std::make_tuple(pos_a, pos_b, lhs_pos_str, rhs_pos_str)
+                      : std::make_tuple(pos_b, pos_a, rhs_pos_str, lhs_pos_str);
+
+  const auto positions = Evaluator::generate_cell_range(lhs_pos, rhs_pos);
+  const auto cells_range = Evaluator::fill_cell_range(positions, cells);
+
+  const auto range_str = lhs_str + ":" + rhs_pos_str;
+  return std::make_shared<CellRangeObject>(range_str, cells_range);
 }
 
 auto Evaluator::eval_fn_call(const ExpressionFnCall& expr_fn_call,
@@ -158,7 +189,8 @@ auto Evaluator::eval_fn_call(const ExpressionFnCall& expr_fn_call,
   }
 
   if (auto casted_ident_obj = DP_CAST_T(IdentObject, ident_obj)) {
-    return MytBuiltins::exec(casted_ident_obj->get_value(), args);
+    const auto value = casted_ident_obj->get_value();
+    return MytBuiltins::exec(value, args);
   }
 
   return NOT_IMPL_ERR("Wrong function identifier type: `" +

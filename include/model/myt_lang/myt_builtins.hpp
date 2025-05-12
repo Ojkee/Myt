@@ -8,9 +8,6 @@
 
 #include "model/myt_lang/myt_object.hpp"
 
-#define NO_BUILTIN_FN_ERR(value)                                              \
-  std::make_shared<ErrorObject>("No function named: `" + std::string(value) + \
-                                "`")
 #define NOT_IMPL_BUILTIN_FN_ERR(value)                              \
   std::make_shared<ErrorObject>("Unimplemented function named: `" + \
                                 std::string(value) + "`")
@@ -43,16 +40,27 @@ class MytBuiltins {
            MytBuiltins::BuiltinFns.end();
   }
 
-  [[nodiscard]] static auto add(const MytObjectArgs& args) noexcept
+  // NO ARGS
+  [[nodiscard]] static auto m_pi(
+      [[maybe_unused]] const MytObjectArgs& args) noexcept -> MytObjectPtr;
+
+  // ONE ARG
+  [[nodiscard]] static auto m_sqrt(const MytObjectArgs& args) noexcept
       -> MytObjectPtr;
-  [[nodiscard]] static auto pi(
-      [[maybe_unused]] const MytObjectArgs& args) noexcept -> MytObjectPtr;
-  [[nodiscard]] static auto sqrt(
-      [[maybe_unused]] const MytObjectArgs& args) noexcept -> MytObjectPtr;
+
+  // MANY ARGS
+  [[nodiscard]] static auto m_sum(const MytObjectArgs& args) noexcept
+      -> MytObjectPtr;
+
   inline static const std::unordered_map<std::string, BuiltinFn> BuiltinFns{
-      {"Add", add},
-      {"Pi", pi},
-      {"Sqrt", sqrt},
+      // NO ARGS
+      {"Pi", m_pi},
+
+      // ONE ARG
+      {"Sqrt", m_sqrt},
+
+      // MANY ARGS
+      {"Sum", m_sum},
   };
 };
 

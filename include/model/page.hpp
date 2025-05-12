@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "data_cell.hpp"
+#include "myt_lang/cell_pos.hpp"
 
 using CellMap = std::unordered_map<CellPos, DataCell>;
 

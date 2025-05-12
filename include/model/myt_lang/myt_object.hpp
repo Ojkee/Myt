@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include "model/myt_lang/ast.hpp"
 
@@ -20,7 +21,7 @@ using MytObjectPtr = std::shared_ptr<MytObject>;
 class MytObject {
  public:
   virtual ~MytObject() = default;
-  virtual const std::string to_string() const noexcept = 0;
+  virtual auto to_string() const noexcept -> const std::string = 0;
 
   auto operator==(const MytObject& other) const noexcept -> bool {
     return this->to_string() == other.to_string();
@@ -73,14 +74,17 @@ class NilObject : public MytObject {
       -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't add Nil");
   }
+
   auto sub([[maybe_unused]] MytObjectPtr other) const noexcept
       -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't sub Nil");
   }
+
   auto mul([[maybe_unused]] MytObjectPtr other) const noexcept
       -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't mul Nil");
   }
+
   auto div([[maybe_unused]] MytObjectPtr other) const noexcept
       -> MytObjectPtr override {
     return MS_T(ErrorObject, "Can't div Nil");
@@ -186,6 +190,53 @@ class IdentObject : public ValueObject<std::string> {
   [[nodiscard]] auto to_string() const noexcept -> const std::string override {
     return m_value;
   };
+};
+
+class CellRangeObject : public MytObject {
+ public:
+  CellRangeObject() = delete;
+  explicit CellRangeObject(const std::string& range_str,
+                           const std::vector<MytObjectPtr>& cells_range)
+      : m_range_str(range_str), m_cells_range(cells_range) {};
+
+  auto to_string() const noexcept -> const std::string override {
+    auto new_line_fold = [](std::string lhs, const MytObjectPtr& obj) {
+      return std::move(lhs) + "; " + obj->to_string();
+    };
+    const auto args =
+        std::accumulate(std::next(m_cells_range.begin()), m_cells_range.end(),
+                        m_cells_range[0]->to_string(), new_line_fold);
+    return m_range_str + " ( " + args + " )";
+  }
+
+  auto add([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
+    return std::make_shared<ErrorObject>("Cell range add not supported yet");
+  }
+
+  auto sub([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
+    return std::make_shared<ErrorObject>("Cell range sub not supported yet");
+  }
+
+  auto mul([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
+    return std::make_shared<ErrorObject>("Can't mul cells range");
+  }
+
+  auto div([[maybe_unused]] MytObjectPtr other) const noexcept
+      -> MytObjectPtr override {
+    return std::make_shared<ErrorObject>("Can't div cells range");
+  }
+
+  [[nodiscard]] auto get_cells_range() const noexcept
+      -> std::vector<MytObjectPtr> {
+    return m_cells_range;
+  }
+
+ private:
+  std::string m_range_str{};
+  std::vector<MytObjectPtr> m_cells_range{};
 };
 
 #endif  // MYT_OBJECT_HPP{

@@ -4,9 +4,9 @@
 
 - [x] Lexing cells
 - [x] Parsing cells
-- [ ] Evaluate cells
-- [ ] Error handling
-- [ ] Few builtins
+- [x] Evaluate cells
+- [x] Error handling
+- [x] Few builtins
 - [ ] Connect to ui
 
 ## Extra
