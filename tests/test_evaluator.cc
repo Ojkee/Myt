@@ -161,8 +161,29 @@ TEST_CASE("Call Expressions to Objects") {
   using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
 
   testCases cases{};
-  cases.emplace_back("= add(5, 3)", std::make_unique<ValueObject<int>>(8),
+  cases.emplace_back(
+      "= Pi()", std::make_unique<ValueObject<FloatType>>(3.141593), CellMap{});
+  cases.emplace_back("= Sqrt(9)", std::make_unique<ValueObject<FloatType>>(3.0),
                      CellMap{});
+  cases.emplace_back("= Sqrt(25.0)",
+                     std::make_unique<ValueObject<FloatType>>(5.0), CellMap{});
+  cases.emplace_back("= Sqrt(3)",
+                     std::make_unique<ValueObject<FloatType>>(1.732051),
+                     CellMap{});
+  cases.emplace_back(
+      "= Sqrt(A8)", std::make_unique<ValueObject<FloatType>>(4.0),
+      CellMap{
+          {CellPos("A8"),
+           DataCell("= 16.", std::make_unique<ValueObject<FloatType>>(16.0))},
+      });
+  cases.emplace_back(
+      "= Sqrt(A8+C9)", std::make_unique<ValueObject<FloatType>>(7.0),
+      CellMap{
+          {CellPos("A8"),
+           DataCell("= 16.", std::make_unique<ValueObject<FloatType>>(16.0))},
+          {CellPos("C9"),
+           DataCell("= 33", std::make_unique<ValueObject<int>>(33))},
+      });
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);

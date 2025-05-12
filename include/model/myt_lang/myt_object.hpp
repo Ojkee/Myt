@@ -136,9 +136,10 @@ class ValueObject : public MytObject {
 
   [[nodiscard]] const ObjectType get_value() const noexcept { return m_value; };
 
- private:
+ protected:
   ObjectType m_value{};
 
+ private:
   template <typename Fn, typename = std::enable_if<std::is_invocable_v<Fn>>>
   auto numeric_operation(MytObjectPtr other, Fn&& op,
                          const std::string& op_literal) const noexcept
@@ -175,6 +176,16 @@ class ValueObject : public MytObject {
     }
     return std::nullopt;
   }
+};
+
+class IdentObject : public ValueObject<std::string> {
+ public:
+  IdentObject() = delete;
+  IdentObject(const std::string& value) : ValueObject<std::string>(value) {};
+
+  [[nodiscard]] auto to_string() const noexcept -> const std::string override {
+    return m_value;
+  };
 };
 
 #endif  // MYT_OBJECT_HPP{

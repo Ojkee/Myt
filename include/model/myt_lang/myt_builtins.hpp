@@ -14,6 +14,16 @@
 #define NOT_IMPL_BUILTIN_FN_ERR(value)                              \
   std::make_shared<ErrorObject>("Unimplemented function named: `" + \
                                 std::string(value) + "`")
+#define N_ARGS_ERR(value, n_want, n_got)                               \
+  std::make_shared<ErrorObject>("Function: `" + std::string(value) +   \
+                                "` takes: " + std::to_string(n_want) + \
+                                " arguments, got: " + std::to_string(n_got))
+#define WRONG_TYPE_ERR(value, want_type, got_type)                      \
+  std::make_shared<ErrorObject>(                                        \
+      "Wrong type in function: `" + std::string(value) + "` wants: `" + \
+      std::string(want_type) + "` got: `" + std::string(got_type) + "`")
+
+#define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
 
 using MytObjectArgs = std::vector<MytObjectPtr>;
 using BuiltinFn = std::function<MytObjectPtr(const MytObjectArgs&)>;
@@ -37,9 +47,12 @@ class MytBuiltins {
       -> MytObjectPtr;
   [[nodiscard]] static auto pi(
       [[maybe_unused]] const MytObjectArgs& args) noexcept -> MytObjectPtr;
+  [[nodiscard]] static auto sqrt(
+      [[maybe_unused]] const MytObjectArgs& args) noexcept -> MytObjectPtr;
   inline static const std::unordered_map<std::string, BuiltinFn> BuiltinFns{
       {"Add", add},
       {"Pi", pi},
+      {"Sqrt", sqrt},
   };
 };
 

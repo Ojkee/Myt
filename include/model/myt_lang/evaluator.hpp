@@ -24,7 +24,6 @@ class Evaluator {
                                            const CellMap& cells) noexcept
       -> MytObjectPtr;
 
-  // PREFIX
   [[nodiscard]] static auto eval_prefix(const ExpressionPrefix& expr_prefix,
                                         const CellMap& cells) noexcept
       -> MytObjectPtr;
@@ -32,10 +31,11 @@ class Evaluator {
       -> MytObjectPtr;
   [[nodiscard]] static auto eval_prefix_minus(MytObjectPtr obj) noexcept
       -> MytObjectPtr;
-
-  // INFIX
   [[nodiscard]] static auto eval_infix(const ExpressionInfix& exrp_infix,
                                        const CellMap& cells) noexcept
+      -> MytObjectPtr;
+  [[nodiscard]] static auto eval_fn_call(const ExpressionFnCall& expr_fn_call,
+                                         const CellMap& cells) noexcept
       -> MytObjectPtr;
 };
 

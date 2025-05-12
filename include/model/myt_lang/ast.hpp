@@ -234,11 +234,13 @@ class ExpressionFnCall : public Expression {
     return this->to_string() == other.to_string();
   }
 
-  auto own_fn_identifier() -> Expression&& {
-    return std::move(*m_fn_identifier);
+  auto get_fn_identifier() const noexcept -> const Expression& {
+    return *m_fn_identifier;
   }
 
-  auto own_arguments() -> Arguments&& { return std::move(m_arguments); }
+  auto get_arguments() const noexcept -> const Arguments& {
+    return m_arguments;
+  }
 
  private:
   ExpressionPtr m_fn_identifier;

@@ -1,11 +1,13 @@
 #include "../../../include/model/myt_lang/evaluator.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <memory>
 #include <variant>
 
 #include "model/data_cell.hpp"
 #include "model/myt_lang/ast.hpp"
+#include "model/myt_lang/myt_builtins.hpp"
 #include "model/myt_lang/myt_object.hpp"
 #include "model/myt_lang/token.hpp"
 #include "model/page.hpp"
@@ -13,8 +15,12 @@
 #define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
 #define MS_T(T, value) std::make_shared<T>(value)
 #define D_CAST(T, expr) dynamic_cast<const T*>(expr)
+#define DP_CAST_T(T, value) std::dynamic_pointer_cast<T>(value)
 #define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
 #define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
+#define NOT_IMPL_ERR(value)                                    \
+  std::make_shared<ErrorObject>("Fn: `" + std::string(value) + \
+                                "` not implemented")
 
 auto Evaluator::evaluate(const ParsingResult& parsed_result,
                          const CellMap& cells) noexcept -> MytObjectPtr {
@@ -44,6 +50,9 @@ auto Evaluator::evaluate_expression(const Expression& expr,
                  D_CAST(ExpressionLiteral<FloatType>, &expr)) {
     return MS_VO_T(FloatType, expr_int->get_value());
 
+  } else if (const auto expr_ident = D_CAST(ExpressionIdentifier, &expr)) {
+    return MS_T(IdentObject, expr_ident->get_name_token().literal);
+
   } else if (const auto expr_cell = D_CAST(ExpressionCell, &expr)) {
     return Evaluator::get_from_cells(*expr_cell, cells);
 
@@ -52,6 +61,9 @@ auto Evaluator::evaluate_expression(const Expression& expr,
 
   } else if (const auto expr_infix = D_CAST(ExpressionInfix, &expr)) {
     return Evaluator::eval_infix(*expr_infix, cells);
+
+  } else if (const auto expr_fn_call = D_CAST(ExpressionFnCall, &expr)) {
+    return Evaluator::eval_fn_call(*expr_fn_call, cells);
   }
 
   return MS_T(NilObject, );
@@ -105,8 +117,8 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
   const auto& expr_lhs = expr_infix.get_lhs_expression();
   const auto& expr_rhs = expr_infix.get_rhs_expression();
 
-  auto lhs_obj = Evaluator::evaluate_expression(expr_lhs, cells);
-  auto rhs_obj = Evaluator::evaluate_expression(expr_rhs, cells);
+  const auto lhs_obj = Evaluator::evaluate_expression(expr_lhs, cells);
+  const auto rhs_obj = Evaluator::evaluate_expression(expr_rhs, cells);
 
   const auto op_token = expr_infix.get_operator_token();
   switch (op_token.type) {
@@ -128,4 +140,27 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
       return MS_T(ErrorObject, "Unimplemented operator " + op_token.literal);
   }
   return MS_T(NilObject, );
+}
+
+auto Evaluator::eval_fn_call(const ExpressionFnCall& expr_fn_call,
+                             const CellMap& cells) noexcept -> MytObjectPtr {
+  const auto& ident_expr = expr_fn_call.get_fn_identifier();
+  const auto& args_expr = expr_fn_call.get_arguments();
+
+  const auto ident_obj = Evaluator::evaluate_expression(ident_expr, cells);
+  if (auto err_obj = DP_CAST_T(ErrorObject, ident_obj)) {
+    return err_obj;
+  }
+
+  std::vector<MytObjectPtr> args;
+  for (const auto& arg_expr : args_expr) {
+    args.emplace_back(Evaluator::evaluate_expression(*arg_expr, cells));
+  }
+
+  if (auto casted_ident_obj = DP_CAST_T(IdentObject, ident_obj)) {
+    return MytBuiltins::exec(casted_ident_obj->get_value(), args);
+  }
+
+  return NOT_IMPL_ERR("Wrong function identifier type: `" +
+                      ident_obj->to_string() + "`");
 }
