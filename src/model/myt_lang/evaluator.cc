@@ -13,16 +13,6 @@
 #include "model/myt_lang/token.hpp"
 #include "model/page.hpp"
 
-#define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
-#define MS_T(T, value) std::make_shared<T>(value)
-#define D_CAST(T, expr) dynamic_cast<const T*>(expr)
-#define DP_CAST_T(T, value) std::dynamic_pointer_cast<T>(value)
-#define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
-#define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
-#define NOT_IMPL_ERR(value)                                    \
-  std::make_shared<ErrorObject>("Fn: `" + std::string(value) + \
-                                "` not implemented")
-
 auto Evaluator::evaluate(const ParsingResult& parsed_result,
                          const CellMap& cells) noexcept -> MytObjectPtr {
   if (std::holds_alternative<ParsingError>(parsed_result)) {
@@ -167,10 +157,15 @@ auto Evaluator::eval_infix_colon(const ExpressionCell& lhs_cell,
                       : std::make_tuple(pos_b, pos_a, rhs_pos_str, lhs_pos_str);
 
   const auto positions = Evaluator::generate_cell_range(lhs_pos, rhs_pos);
-  const auto cells_range = Evaluator::fill_cell_range(positions, cells);
+  const auto cells_result = Evaluator::fill_cell_range(positions, cells);
 
+  if (std::holds_alternative<std::shared_ptr<ErrorObject>>(cells_result)) {
+    const auto& err = std::get<std::shared_ptr<ErrorObject>>(cells_result);
+    return err;
+  }
+  const auto cells_range = &std::get<std::vector<MytObjectPtr>>(cells_result);
   const auto range_str = lhs_str + ":" + rhs_pos_str;
-  return std::make_shared<CellRangeObject>(range_str, cells_range);
+  return std::make_shared<CellRangeObject>(range_str, *cells_range);
 }
 
 auto Evaluator::eval_fn_call(const ExpressionFnCall& expr_fn_call,

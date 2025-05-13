@@ -7,6 +7,19 @@
 #include "model/myt_lang/parser.hpp"
 #include "model/page.hpp"
 
+using ObjectsResult =
+    std::variant<std::vector<MytObjectPtr>, std::shared_ptr<ErrorObject>>;
+
+#define MS_VO_T(T, value) std::make_shared<ValueObject<T>>(value)
+#define MS_T(T, value) std::make_shared<T>(value)
+#define D_CAST(T, expr) dynamic_cast<const T*>(expr)
+#define DP_CAST_T(T, value) std::dynamic_pointer_cast<T>(value)
+#define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
+#define ZERO_DIV_ERR std::make_shared<ErrorObject>("Can't divide by 0")
+#define NOT_IMPL_ERR(value)                                    \
+  std::make_shared<ErrorObject>("Fn: `" + std::string(value) + \
+                                "` not implemented")
+
 class Evaluator {
  public:
   [[nodiscard]] static auto evaluate(const ParsingResult& parsed_result,
@@ -58,12 +71,17 @@ class Evaluator {
 
   [[nodiscard]] static auto fill_cell_range(
       const std::vector<CellPos> positions, const CellMap& cells) noexcept
-      -> std::vector<MytObjectPtr> {
+      -> ObjectsResult {
     std::vector<MytObjectPtr> cells_range{};
     for (const auto& pos : positions) {
       if (is_in_cells(pos, cells)) {
         const auto data_cell = cells.at(pos);
         const auto obj = data_cell.get_evaluated_content();
+        if (auto cell_range = DP_CAST_T(CellRangeObject, obj)) {
+          const auto err_msg =
+              "Invalid expression: nested cell ranges are not supported yet";
+          return MS_T(ErrorObject, err_msg);
+        }
         cells_range.emplace_back(obj);
       } else {
         const auto nil_obj = MS_T(NilObject, );

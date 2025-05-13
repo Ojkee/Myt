@@ -15,12 +15,17 @@
   std::make_shared<ErrorObject>("Function: `" + std::string(value) +   \
                                 "` takes: " + std::to_string(n_want) + \
                                 " arguments, got: " + std::to_string(n_got))
+#define N_STR_ARGS_ERR(value, n_want, n_got)                         \
+  std::make_shared<ErrorObject>("Function: `" + std::string(value) + \
+                                "` takes: " + n_want +               \
+                                " arguments, got: " + std::to_string(n_got))
 #define WRONG_TYPE_ERR(value, want_type, got_type)                      \
   std::make_shared<ErrorObject>(                                        \
       "Wrong type in function: `" + std::string(value) + "` wants: `" + \
       std::string(want_type) + "` got: `" + std::string(got_type) + "`")
 
 #define DP_CAST_VO_T(T, value) std::dynamic_pointer_cast<ValueObject<T>>(value)
+#define DP_CAST_T(T, value) std::dynamic_pointer_cast<T>(value)
 
 using MytObjectArgs = std::vector<MytObjectPtr>;
 using BuiltinFn = std::function<MytObjectPtr(const MytObjectArgs&)>;

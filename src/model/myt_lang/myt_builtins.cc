@@ -52,5 +52,46 @@ auto MytBuiltins::m_sqrt(const MytObjectArgs& args) noexcept -> MytObjectPtr {
 // MANY ARGS
 
 auto MytBuiltins::m_sum(const MytObjectArgs& args) noexcept -> MytObjectPtr {
-  return NOT_IMPL_BUILTIN_FN_ERR("Sum");
+  if (args.size() == 0) {
+    return N_STR_ARGS_ERR("Sum", "More than 0", args.size());
+  }
+  int sumi{};
+  FloatType sumf{};
+  auto seen_float{false};
+
+  for (const auto& arg : args) {
+    if (!seen_float) {
+      if (auto int_obj = DP_CAST_VO_T(int, arg)) {
+        sumi += int_obj->get_value();
+      } else if (auto float_obj = DP_CAST_VO_T(FloatType, arg)) {
+        seen_float = true;
+        sumf = float_obj->get_value() + static_cast<FloatType>(sumi);
+      } else if (auto range_obj = DP_CAST_T(CellRangeObject, arg)) {
+        auto res = MytBuiltins::m_sum(range_obj->get_cells_range());
+        if (auto int_res = DP_CAST_VO_T(int, res)) {
+          sumi += int_res->get_value();
+        } else if (auto float_res = DP_CAST_VO_T(FloatType, res)) {
+          seen_float = true;
+          sumf = float_res->get_value() + static_cast<FloatType>(sumi);
+        }
+      }
+    } else {
+      if (auto int_obj = DP_CAST_VO_T(int, arg)) {
+        sumf += static_cast<FloatType>(int_obj->get_value());
+      } else if (auto float_obj = DP_CAST_VO_T(FloatType, arg)) {
+        sumf += float_obj->get_value();
+      } else if (auto range_obj = DP_CAST_T(CellRangeObject, arg)) {
+        auto res = MytBuiltins::m_sum(range_obj->get_cells_range());
+        if (auto int_res = DP_CAST_VO_T(int, res)) {
+          sumf += static_cast<FloatType>(int_res->get_value());
+        } else if (auto float_res = DP_CAST_VO_T(FloatType, res)) {
+          sumf += float_res->get_value();
+        }
+      }
+    }
+  }
+  if (seen_float) {
+    return MS_VO_T(FloatType, sumf);
+  }
+  return MS_VO_T(int, sumi);
 }

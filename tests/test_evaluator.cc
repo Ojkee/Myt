@@ -202,6 +202,63 @@ TEST_CASE("Infix Expressions to Objects") {
           {CellPos("E2"),
            DataCell("= 9", std::make_shared<ValueObject<int>>(9))},
       });
+  cases.emplace_back(
+      "= B2:D2",
+      std::make_unique<CellRangeObject>(
+          "B2:D2",
+          std::vector<MytObjectPtr>{
+              std::make_shared<ValueObject<int>>(4),
+              std::make_shared<NilObject>(),
+              std::make_shared<ValueObject<int>>(8),
+          }),
+      CellMap{
+          {CellPos("A2"),
+           DataCell("= 1", std::make_shared<ValueObject<int>>(1))},
+          {CellPos("A3"),
+           DataCell("= 2", std::make_shared<ValueObject<int>>(2))},
+          {CellPos("B1"),
+           DataCell("= 3", std::make_shared<ValueObject<int>>(3))},
+          {CellPos("B2"),
+           DataCell("= 4", std::make_shared<ValueObject<int>>(4))},
+          {CellPos("B3"),
+           DataCell("= 5", std::make_shared<ValueObject<int>>(5))},
+          {CellPos("B4"),
+           DataCell("= 6", std::make_shared<ValueObject<int>>(6))},
+          {CellPos("D2"),
+           DataCell("= 8", std::make_shared<ValueObject<int>>(8))},
+          {CellPos("E2"),
+           DataCell("= 9", std::make_shared<ValueObject<int>>(9))},
+      });
+  cases.emplace_back(
+      "= B1:C2",
+      std::make_unique<CellRangeObject>(
+          "B1:C2",
+          std::vector<MytObjectPtr>{
+              std::make_shared<ValueObject<int>>(3),
+              std::make_shared<ValueObject<int>>(4),
+              std::make_shared<NilObject>(),
+              std::make_shared<ValueObject<int>>(7),
+          }),
+      CellMap{
+          {CellPos("A2"),
+           DataCell("= 1", std::make_shared<ValueObject<int>>(1))},
+          {CellPos("A3"),
+           DataCell("= 2", std::make_shared<ValueObject<int>>(2))},
+          {CellPos("B1"),
+           DataCell("= 3", std::make_shared<ValueObject<int>>(3))},
+          {CellPos("B2"),
+           DataCell("= 4", std::make_shared<ValueObject<int>>(4))},
+          {CellPos("B3"),
+           DataCell("= 5", std::make_shared<ValueObject<int>>(5))},
+          {CellPos("B4"),
+           DataCell("= 6", std::make_shared<ValueObject<int>>(6))},
+          {CellPos("C2"),
+           DataCell("= 7", std::make_shared<ValueObject<int>>(7))},
+          {CellPos("D2"),
+           DataCell("= 8", std::make_shared<ValueObject<int>>(8))},
+          {CellPos("E2"),
+           DataCell("= 9", std::make_shared<ValueObject<int>>(9))},
+      });
 
   for (const auto& [input, target, cells] : cases) {
     const auto tokens = Lexer::tokenize(input);
@@ -211,7 +268,7 @@ TEST_CASE("Infix Expressions to Objects") {
   }
 }
 
-TEST_CASE("Call Expressions to Objects") {
+TEST_CASE("No Arg Call Expressions to Objects") {
   using inputType = std::string;
   using targetType = MytObjectPtr;
   using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
@@ -219,6 +276,21 @@ TEST_CASE("Call Expressions to Objects") {
   testCases cases{};
   cases.emplace_back(
       "= Pi()", std::make_unique<ValueObject<FloatType>>(3.141593), CellMap{});
+
+  for (const auto& [input, target, cells] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    const auto evaluated = Evaluator::evaluate(parsed, cells);
+    CHECK(*evaluated == *target);
+  }
+}
+
+TEST_CASE("Single Arg Call Expressions to Objects") {
+  using inputType = std::string;
+  using targetType = MytObjectPtr;
+  using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
+
+  testCases cases{};
   cases.emplace_back("= Sqrt(9)", std::make_unique<ValueObject<FloatType>>(3.0),
                      CellMap{});
   cases.emplace_back("= Sqrt(25.0)",
@@ -239,6 +311,138 @@ TEST_CASE("Call Expressions to Objects") {
            DataCell("= 16.", std::make_unique<ValueObject<FloatType>>(16.0))},
           {CellPos("C9"),
            DataCell("= 33", std::make_unique<ValueObject<int>>(33))},
+      });
+
+  for (const auto& [input, target, cells] : cases) {
+    const auto tokens = Lexer::tokenize(input);
+    const auto parsed = Parser::parse(tokens);
+    const auto evaluated = Evaluator::evaluate(parsed, cells);
+    CHECK(*evaluated == *target);
+  }
+}
+
+TEST_CASE("Multi Arg Call Expressions to Objects") {
+  using inputType = std::string;
+  using targetType = MytObjectPtr;
+  using testCases = std::vector<std::tuple<inputType, targetType, CellMap>>;
+
+  testCases cases{};
+  cases.emplace_back("= Sum(3)", std::make_unique<ValueObject<int>>(3),
+                     CellMap{});
+  cases.emplace_back(
+      "= Sum(B2:D4, 5, A1, (5*2), -1)", std::make_unique<ValueObject<int>>(97),
+      CellMap{
+          {CellPos("A1"),
+           DataCell("= 2", std::make_unique<ValueObject<int>>(2))},
+          {CellPos("A2"),
+           DataCell("= 3", std::make_unique<ValueObject<int>>(3))},
+          {CellPos("A3"),
+           DataCell("= 4", std::make_unique<ValueObject<int>>(4))},
+          {CellPos("B2"),
+           DataCell("= 5", std::make_unique<ValueObject<int>>(5))},
+          {CellPos("B3"),
+           DataCell("= 6", std::make_unique<ValueObject<int>>(6))},
+          {CellPos("B4"),
+           DataCell("= 7", std::make_unique<ValueObject<int>>(7))},
+          {CellPos("C2"),
+           DataCell("= 8", std::make_unique<ValueObject<int>>(8))},
+          {CellPos("C3"),
+           DataCell("= 9", std::make_unique<ValueObject<int>>(9))},
+          {CellPos("C4"),
+           DataCell("= 10", std::make_unique<ValueObject<int>>(10))},
+          {CellPos("D2"),
+           DataCell("= 11", std::make_unique<ValueObject<int>>(11))},
+          {CellPos("D3"),
+           DataCell("= 12", std::make_unique<ValueObject<int>>(12))},
+          {CellPos("D4"),
+           DataCell("= 13", std::make_unique<ValueObject<int>>(13))},
+      });
+  cases.emplace_back(
+      "= Sum(B2:D4, 5.0, A1, (5*2), -1)",
+      std::make_unique<ValueObject<FloatType>>(97.0),
+      CellMap{
+          {CellPos("A1"),
+           DataCell("= 2", std::make_unique<ValueObject<int>>(2))},
+          {CellPos("A2"),
+           DataCell("= 3", std::make_unique<ValueObject<int>>(3))},
+          {CellPos("A3"),
+           DataCell("= 4", std::make_unique<ValueObject<int>>(4))},
+          {CellPos("B2"),
+           DataCell("= 5", std::make_unique<ValueObject<int>>(5))},
+          {CellPos("B3"),
+           DataCell("= 6", std::make_unique<ValueObject<int>>(6))},
+          {CellPos("B4"),
+           DataCell("= 7", std::make_unique<ValueObject<int>>(7))},
+          {CellPos("C2"),
+           DataCell("= 8", std::make_unique<ValueObject<int>>(8))},
+          {CellPos("C3"),
+           DataCell("= 9", std::make_unique<ValueObject<int>>(9))},
+          {CellPos("C4"),
+           DataCell("= 10", std::make_unique<ValueObject<int>>(10))},
+          {CellPos("D2"),
+           DataCell("= 11", std::make_unique<ValueObject<int>>(11))},
+          {CellPos("D3"),
+           DataCell("= 12", std::make_unique<ValueObject<int>>(12))},
+          {CellPos("D4"),
+           DataCell("= 13", std::make_unique<ValueObject<int>>(13))},
+      });
+  cases.emplace_back(
+      "= Sum(B2:D4, 5, A1, (5*2), -1)",
+      std::make_unique<ValueObject<FloatType>>(97.0),
+      CellMap{
+          {CellPos("A1"),
+           DataCell("= 2.0", std::make_unique<ValueObject<FloatType>>(2.0))},
+          {CellPos("A2"),
+           DataCell("= 3", std::make_unique<ValueObject<int>>(3))},
+          {CellPos("A3"),
+           DataCell("= 4", std::make_unique<ValueObject<int>>(4))},
+          {CellPos("B2"),
+           DataCell("= 5", std::make_unique<ValueObject<int>>(5))},
+          {CellPos("B3"),
+           DataCell("= 6", std::make_unique<ValueObject<int>>(6))},
+          {CellPos("B4"),
+           DataCell("= 7", std::make_unique<ValueObject<int>>(7))},
+          {CellPos("C2"),
+           DataCell("= 8", std::make_unique<ValueObject<int>>(8))},
+          {CellPos("C3"),
+           DataCell("= 9", std::make_unique<ValueObject<int>>(9))},
+          {CellPos("C4"),
+           DataCell("= 10", std::make_unique<ValueObject<int>>(10))},
+          {CellPos("D2"),
+           DataCell("= 11", std::make_unique<ValueObject<int>>(11))},
+          {CellPos("D3"),
+           DataCell("= 12", std::make_unique<ValueObject<int>>(12))},
+          {CellPos("D4"),
+           DataCell("= 13", std::make_unique<ValueObject<int>>(13))},
+      });
+  cases.emplace_back(
+      "= Sum(B2:D4, 5, A1, (5*2), -1)",
+      std::make_unique<ValueObject<FloatType>>(97.0),
+      CellMap{
+          {CellPos("A1"),
+           DataCell("= 2", std::make_unique<ValueObject<int>>(2))},
+          {CellPos("A2"),
+           DataCell("= 3", std::make_unique<ValueObject<int>>(3))},
+          {CellPos("A3"),
+           DataCell("= 4", std::make_unique<ValueObject<int>>(4))},
+          {CellPos("B2"),
+           DataCell("= 5", std::make_unique<ValueObject<int>>(5))},
+          {CellPos("B3"),
+           DataCell("= 6", std::make_unique<ValueObject<int>>(6))},
+          {CellPos("B4"),
+           DataCell("= 7", std::make_unique<ValueObject<int>>(7))},
+          {CellPos("C2"),
+           DataCell("= 8", std::make_unique<ValueObject<int>>(8))},
+          {CellPos("C3"),
+           DataCell("= 9.0", std::make_unique<ValueObject<FloatType>>(9.0))},
+          {CellPos("C4"),
+           DataCell("= 10", std::make_unique<ValueObject<int>>(10))},
+          {CellPos("D2"),
+           DataCell("= 11", std::make_unique<ValueObject<int>>(11))},
+          {CellPos("D3"),
+           DataCell("= 12", std::make_unique<ValueObject<int>>(12))},
+          {CellPos("D4"),
+           DataCell("= 13", std::make_unique<ValueObject<int>>(13))},
       });
 
   for (const auto& [input, target, cells] : cases) {
