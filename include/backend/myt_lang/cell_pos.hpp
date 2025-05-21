@@ -12,7 +12,7 @@
 #include <string_view>
 #include <type_traits>
 
-using CellLimitType = uint16_t;
+using CellLimitType = uint8_t;
 
 class InvalidCellString : public std::exception {
  public:

@@ -4,47 +4,44 @@ import QtQuick.Layouts 1.15
 import QtQuick.Window 2.15
 
 ApplicationWindow {
-    visible: true
-    width: 1400
-    height: 600
-    title: qsTr("Myt")
+  title: qsTr("Myt")
+  visible: true
+  width: 1056
+  height: 576
 
-    GridView {
-        id: gridView
-        anchors.fill: parent
-        cellWidth: 50
-        cellHeight: 50
-        model: 100000
-        flow: GridView.LeftToRight
-        boundsBehavior: Flickable.StopAtBounds
-        clip: true
+  GridView {
+    id: gridView
+    anchors.fill: parent
+    cellWidth: 96
+    cellHeight: 36
 
-        delegate: Cell {
-            idx: index
-            isFirstCol: index % columnCount === 0
-            isFirstRow: index < columnCount
-            colIdx: index % columnCount
-            rowIdx: Math.floor(index / columnCount)
-        }
+    property int colCount: Math.floor(parent.width / cellWidth)
+    property int rowCount: Math.floor(parent.height / cellHeight)
+    property int colOffset: 0
+    property int rowOffset: 0
 
-        ScrollBar.horizontal: ScrollBar {
-            policy: ScrollBar.AsNeeded
-        }
+    model: colCount * rowCount
 
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
-        }
-
-        WheelHandler {
-            id: wheelHandler
-            target: gridView
-            onWheel: (event) => {
-                if (event.modifiers & Qt.ControlModifier) {
-                    gridView.contentX -= event.angleDelta.y
-                } else {
-                    gridView.contentY -= event.angleDelta.y
-                }
-            }
-        }
+    delegate: Cell {
+      width: gridView.cellWidth
+      height: gridView.cellHeight
+      colIdx: index % gridView.colCount
+      rowIdx: Math.floor(index / gridView.colCount)
+      col: colIdx + gridView.colOffset
+      row: rowIdx + gridView.rowOffset
     }
+
+    WheelHandler {
+      id: wheelHandler
+      acceptedDevices: PointerDevice.Mouse
+      onWheel: (event) => {
+        if (event.modifiers & Qt.ControlModifier) {
+          gridView.colOffset = Math.max(0, gridView.colOffset - Math.sign(event.angleDelta.y))
+        } else {
+          gridView.rowOffset = Math.max(0, gridView.rowOffset - Math.sign(event.angleDelta.y))
+        }
+        event.accepted = true
+      }
+    }
+  } 
 }

@@ -26,8 +26,8 @@ class Window {
 
     m_engine.rootContext()->setContextProperty("windowUtils", &m_wu);
 
-    m_engine.rootContext()->setContextProperty(
-        "columnCount", std::numeric_limits<CellLimitType>::max());
+    const auto columnLimit = std::numeric_limits<CellLimitType>::max();
+    m_engine.rootContext()->setContextProperty("columnLimit", columnLimit);
     m_engine.load(url);
   }
 
