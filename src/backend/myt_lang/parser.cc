@@ -1,4 +1,4 @@
-#include "../../../include/model/myt_lang/parser.hpp"
+#include "../../../include/backend/myt_lang/parser.hpp"
 
 #include <climits>
 #include <cstddef>
@@ -9,8 +9,8 @@
 #include <string>
 #include <variant>
 
-#include "model/myt_lang/ast.hpp"
-#include "model/myt_lang/token.hpp"
+#include "backend/myt_lang/ast.hpp"
+#include "backend/myt_lang/token.hpp"
 
 auto Parser::print_result(const ParsingResult& result) noexcept -> void {
   if (std::holds_alternative<ParsingError>(result)) {

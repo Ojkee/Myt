@@ -3,9 +3,9 @@
 #include <variant>
 
 #include "../extern/include/catch.hpp"
-#include "../include/model/myt_lang/ast.hpp"
-#include "../include/model/myt_lang/lexer.hpp"
-#include "../include/model/myt_lang/parser.hpp"
+#include "../include/backend/myt_lang/ast.hpp"
+#include "../include/backend/myt_lang/lexer.hpp"
+#include "../include/backend/myt_lang/parser.hpp"
 
 namespace Catch {
 template <>

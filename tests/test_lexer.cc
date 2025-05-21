@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "../extern/include/catch.hpp"
-#include "../include/model/myt_lang/lexer.hpp"
-#include "../include/model/myt_lang/token.hpp"
+#include "../include/backend/myt_lang/lexer.hpp"
+#include "../include/backend/myt_lang/token.hpp"
 
 namespace Catch {
 template <>

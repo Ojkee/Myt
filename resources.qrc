@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>include/frontend/qml/Main.qml</file>
+        <file>include/frontend/qml/Cell.qml</file>
+    </qresource>
+</RCC>

@@ -1,9 +1,9 @@
-#include "../../include/model/page.hpp"
+#include "../../include/backend/page.hpp"
 
 #include <variant>
 
-#include "../../include/model/myt_lang/lexer.hpp"
-#include "../../include/model/myt_lang/parser.hpp"
+#include "../../include/backend/myt_lang/lexer.hpp"
+#include "../../include/backend/myt_lang/parser.hpp"
 
 std::optional<std::string> Page::get_cell_raw_content(
     const CellPos& pos) const noexcept {

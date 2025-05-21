@@ -1,18 +1,17 @@
 #ifndef APP_HPP
 #define APP_HPP
 
-#include "controller/input_handler.hpp"
-#include "view/window.hpp"
+#include "frontend/window.hpp"
 
 class MytApp {
  public:
-  MytApp() = default;
+  MytApp() = delete;
+  MytApp(int argc, char *argv[]) : m_window(argc, argv) {};
 
-  auto run() noexcept -> void;
+  auto exec() noexcept -> int;
 
  private:
-  Window m_window{};
-  InputHandler m_input_handler{};
+  Window m_window;
 };
 
 #endif  // !APP_HPP

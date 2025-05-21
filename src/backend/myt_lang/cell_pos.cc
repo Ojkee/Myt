@@ -1,4 +1,4 @@
-#include "../../../include/model/myt_lang/cell_pos.hpp"
+#include "../../../include/backend/myt_lang/cell_pos.hpp"
 
 #include <cmath>
 
@@ -27,7 +27,7 @@ auto CellPos::convert_letters(const std::string_view& valid_format_str,
   const auto index_op = [](const char& c, const auto& idx) {
     return static_cast<uint32_t>(std::pow(26, idx) * (c - 'A' + 1));
   };
-  const auto converted = acc(letters.rbegin(), letters.rend(), 0, index_op);
+  const auto converted = acc(letters.crbegin(), letters.crend(), 0, index_op);
   if (!CellPos::in_limit_range(converted)) {
     const auto msg = "Invalid range in: `" + std::string(valid_format_str) +
                      "` max: `" + std::to_string(max_limit) + "`";

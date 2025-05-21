@@ -1,10 +1,10 @@
-#include "../../../include/model/myt_lang/myt_builtins.hpp"
+#include "../../../include/backend/myt_lang/myt_builtins.hpp"
 
 #include <cmath>
 #include <memory>
 
-#include "model/myt_lang/ast.hpp"
-#include "model/myt_lang/myt_object.hpp"
+#include "backend/myt_lang/ast.hpp"
+#include "backend/myt_lang/myt_object.hpp"
 
 #define MYT_PI 3.141592653589793238462643383279502884197
 

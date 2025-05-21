@@ -2,13 +2,13 @@
 #include <tuple>
 
 #include "../extern/include/catch.hpp"
-#include "model/data_cell.hpp"
-#include "model/myt_lang/ast.hpp"
-#include "model/myt_lang/evaluator.hpp"
-#include "model/myt_lang/lexer.hpp"
-#include "model/myt_lang/myt_object.hpp"
-#include "model/myt_lang/parser.hpp"
-#include "model/page.hpp"
+#include "backend/data_cell.hpp"
+#include "backend/myt_lang/ast.hpp"
+#include "backend/myt_lang/evaluator.hpp"
+#include "backend/myt_lang/lexer.hpp"
+#include "backend/myt_lang/myt_object.hpp"
+#include "backend/myt_lang/parser.hpp"
+#include "backend/page.hpp"
 
 namespace Catch {
 template <>

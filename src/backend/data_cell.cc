@@ -1,4 +1,4 @@
-#include "../../include/model/data_cell.hpp"
+#include "../../include/backend/data_cell.hpp"
 
 auto DataCell::get_raw_content() const noexcept -> std::string {
   return m_raw_content;

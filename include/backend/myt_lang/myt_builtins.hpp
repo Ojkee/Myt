@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "model/myt_lang/myt_object.hpp"
+#include "backend/myt_lang/myt_object.hpp"
 
 #define NOT_IMPL_BUILTIN_FN_ERR(value)                              \
   std::make_shared<ErrorObject>("Unimplemented function named: `" + \

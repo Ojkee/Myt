@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "../extern/include/catch.hpp"
-#include "model/myt_lang/cell_pos.hpp"
+#include "backend/myt_lang/cell_pos.hpp"
 
 namespace Catch {
 template <>
