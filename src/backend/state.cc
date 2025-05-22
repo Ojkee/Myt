@@ -21,8 +21,9 @@ auto State::get_content_by_pos(const CellLimitType& col,
   return QString::fromStdString(cell.value_or(""));
 }
 
-QString State::get_raw_content_by_pos(const CellLimitType& col,
-                                      const CellLimitType& row) noexcept {
+auto State::get_raw_content_by_pos(const CellLimitType& col,
+                                   const CellLimitType& row) noexcept
+    -> QString {
   const CellPos pos{col, row};
   const auto& current_page = m_pages.at(m_current_page_idx);
   const auto raw_content_str =
@@ -49,7 +50,7 @@ auto State::eval_content(const std::string& raw_content) const noexcept
   return obj;
 }
 
-void State::log_cells() const noexcept {
+auto State::log_cells() const noexcept -> void {
   const auto current_page = m_pages.at(m_current_page_idx);
   for (const auto& [pos, dc] : current_page.get_cells()) {
     std::cout << "{" << pos.col << ":" << pos.row << "} `" << dc.to_string()

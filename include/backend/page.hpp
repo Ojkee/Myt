@@ -27,7 +27,7 @@ class Page {
   [[nodiscard]] auto get_cells() const noexcept -> CellMap { return m_cells; }
   auto save_cell(const DataCell& data_cell, const CellPos& pos) noexcept
       -> void {
-    m_cells.insert({pos, data_cell});
+    m_cells.insert_or_assign(pos, data_cell);
   };
   auto erase_cell(const CellPos& pos) noexcept -> void;
 

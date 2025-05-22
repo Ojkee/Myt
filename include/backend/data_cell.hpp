@@ -15,9 +15,6 @@ class DataCell {
   DataCell(const std::string& raw_content, MytObjectPtr value)
       : m_raw_content(raw_content), m_evaluated_content(value) {};
 
-  DataCell(DataCell&& other) noexcept = default;
-  DataCell(const DataCell&) = default;
-
   [[nodiscard]] auto get_raw_content() const noexcept -> std::string;
   auto set_raw_content(const std::string& value) noexcept -> void;
 
