@@ -23,7 +23,7 @@ TEST_CASE("Converting string cell pos to row/col pos") {
   testCasesType cases{
       {"A1", CellPos{1, 1}},       {"B2", CellPos{2, 2}},
       {"Z55", CellPos{26, 55}},    {"AA255", CellPos{27, 255}},
-      {"AB255", CellPos{28, 255}}, {"UI255", CellPos{255, 255}},
+      {"AB255", CellPos{28, 255}}, {"UI255", CellPos{555, 255}},
   };
 
   for (const auto& [input, target] : cases) {

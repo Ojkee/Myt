@@ -1,5 +1,9 @@
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef PAGE_HPP
+#define PAGE_HPP
+
+#include <qobject.h>
+#include <qtmetamacros.h>
+#include <qurl.h>
 
 #include <optional>
 #include <string>
@@ -12,22 +16,23 @@ using CellMap = std::unordered_map<CellPos, DataCell>;
 
 class Page {
  public:
-  Page() = default;
+  explicit Page() : m_cells() {}
 
-  [[nodiscard]] auto is_running() noexcept -> bool { return m_is_running; }
-  auto stop_running() noexcept -> void { m_is_running = false; }
   [[nodiscard]] auto cell_exists(const CellPos& pos) const noexcept -> bool;
   [[nodiscard]] auto get_cell_raw_content(const CellPos& pos) const noexcept
       -> std::optional<std::string>;
+  [[nodiscard]] auto get_cell_eval_content(const CellPos& pos) const noexcept
+      -> std::optional<std::string>;
 
-  auto eval_cell(const CellPos& pos) noexcept -> void;
+  [[nodiscard]] auto get_cells() const noexcept -> CellMap { return m_cells; }
+  auto save_cell(const DataCell& data_cell, const CellPos& pos) noexcept
+      -> void {
+    m_cells.insert({pos, data_cell});
+  };
   auto erase_cell(const CellPos& pos) noexcept -> void;
 
  private:
-  void save_eval_cell();
-
-  bool m_is_running{true};
-  CellMap m_cells{};
+  CellMap m_cells;
 };
 
-#endif  // !STATE_HPP
+#endif  // !PAGE_HPP

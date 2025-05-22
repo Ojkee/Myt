@@ -9,12 +9,14 @@
 #include <limits>
 
 #include "backend/myt_lang/cell_pos.hpp"
+#include "backend/state.hpp"
 #include "frontend/window_utils.hpp"
 
 class Window {
  public:
   Window() = delete;
-  Window(int argc, char *argv[]) : m_wu(), m_app(argc, argv), m_engine() {
+  Window(int argc, char *argv[])
+      : m_wu(), m_state(), m_app(argc, argv), m_engine() {
     const QUrl url{QStringLiteral("qrc:/include/frontend/qml/Main.qml")};
 
     QObject::connect(
@@ -25,16 +27,20 @@ class Window {
         Qt::QueuedConnection);
 
     m_engine.rootContext()->setContextProperty("windowUtils", &m_wu);
+    m_engine.rootContext()->setContextProperty("windowState", &m_state);
 
-    const auto columnLimit = std::numeric_limits<CellLimitType>::max();
-    m_engine.rootContext()->setContextProperty("columnLimit", columnLimit);
+    m_engine.rootContext()->setContextProperty("colrowLimit", m_colrowLimit);
     m_engine.load(url);
   }
 
   auto exec() -> int { return m_app.exec(); }
 
  private:
+  constexpr static CellLimitType m_colrowLimit =
+      std::numeric_limits<CellLimitType>::max();
+
   WindowUtils m_wu;
+  State m_state;
 
   QGuiApplication m_app;
   QQmlApplicationEngine m_engine;

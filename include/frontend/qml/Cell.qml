@@ -3,20 +3,19 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
-  width: 100
-  height: 40
   border.color: "#333"
   color: isFirstRow || isFirstCol ? "#888" : (isEditing ? "#333" : "#555")
 
-  property string label: "Default"
-  property bool isEditing: false
 
   property int colIdx
   property int rowIdx
-  property int col
-  property int row
+  property int col: 0
+  property int row: 0
   property bool isFirstCol: colIdx === 0
   property bool isFirstRow: rowIdx === 0
+
+  property string label: ""
+  property bool isEditing: false
 
   MouseArea {
     anchors.fill: parent
@@ -34,15 +33,19 @@ Rectangle {
         windowUtils.col_idx_to_letter(col) : 
         (isFirstCol ?
           row :
-          col + ";" + row))
-    color: "#FFF8E7"
+          (label === "" ?
+            windowUtils.col_idx_to_letter(col) + "" + row :
+            windowState.get_content_by_pos(col, row))))
+    color: (isFirstCol || isFirstRow || label !== "") ? 
+      "#FFF8E7" :
+      "#777" 
     font.pixelSize: 16
   }
 
   TextInput {
     visible: isEditing
     anchors.fill: parent
-    text: label
+    text: windowState.get_raw_content_by_pos(col, row)
     color: "#FFF8E7"
     font.pixelSize: 16
     focus: isEditing
@@ -50,18 +53,27 @@ Rectangle {
     cursorVisible: true
 
     onEditingFinished: {
-        label = text
-        isEditing = false
+      if (text !== "") {
+        windowState.eval_save(text, col, row)
+        label = windowState.get_content_by_pos(col, row)
+      }
+      isEditing = false
     }
 
     Keys.onReturnPressed: {
-        label = text
-        isEditing = false
+      if (text !== "") {
+        windowState.eval_save(text, col, row)
+        label = windowState.get_content_by_pos(col, row)
+      }
+      isEditing = false
     }
 
     Keys.onEscapePressed: {
-        label = text
-        isEditing = false
+      if (text !== "") {
+        windowState.eval_save(text, col, row)
+        label = windowState.get_content_by_pos(col, row)
+      }
+      isEditing = false
     }
   }
 }

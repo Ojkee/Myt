@@ -15,7 +15,7 @@ TEST_CASE("Converting number to letter index") {
   WindowUtils wu{};
   for (const auto& [input, target] : cases) {
     const auto result = wu.col_idx_to_letter(input);
-    const auto result_str = result.toUtf8().toStdString();
+    const auto result_str = result.toStdString();
     CHECK(result_str == target);
   }
 }

@@ -11,6 +11,7 @@ ApplicationWindow {
 
   GridView {
     id: gridView
+    interactive: false
     anchors.fill: parent
     cellWidth: 96
     cellHeight: 36

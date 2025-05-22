@@ -12,8 +12,8 @@
 class DataCell {
  public:
   DataCell() = delete;
-  DataCell(const std::string& raw_content, MytObjectPtr&& value)
-      : m_raw_content(raw_content), m_evaluated_content(std::move(value)) {};
+  DataCell(const std::string& raw_content, MytObjectPtr value)
+      : m_raw_content(raw_content), m_evaluated_content(value) {};
 
   DataCell(DataCell&& other) noexcept = default;
   DataCell(const DataCell&) = default;
@@ -32,12 +32,12 @@ class DataCell {
 
   void reset() noexcept {
     m_raw_content.clear();
-    m_evaluated_content = std::make_unique<NilObject>();
+    m_evaluated_content = std::make_shared<NilObject>();
   }
 
  private:
   std::string m_raw_content{};
-  MytObjectPtr m_evaluated_content{std::make_unique<NilObject>()};
+  MytObjectPtr m_evaluated_content{std::make_shared<NilObject>()};
 };
 
 #endif  // !CELL_HPP
