@@ -7,7 +7,7 @@
 #include "backend/myt_lang/parser.hpp"
 #include "backend/myt_lang/token.hpp"
 
-auto DependenciesHandler::catch_dependencies(
+auto DependenciesHandler::update_dependencies(
     const CellPos& affected_pos, const ParsingResult& parsing_result) noexcept
     -> void {
   if (std::holds_alternative<ParsingError>(parsing_result)) {
@@ -36,24 +36,27 @@ auto DependenciesHandler::traverse_expression(const CellPos& affected_pos,
   } else if (auto cell = dynamic_cast<const ExpressionCell*>(&expr)) {
     const auto cell_token = cell->get_cell_token();
     const auto used_pos = CellPos{cell_token.literal};
-    append_dependency(affected_pos, used_pos);
+    append_dependency(affected_pos, used_pos, m_dependencies);
+    append_dependency(used_pos, affected_pos, m_dependencies_uses);
   }
 }
 
-auto DependenciesHandler::append_dependency(const CellPos& affected_pos,
-                                            const CellPos& used_pos) noexcept
+auto DependenciesHandler::append_dependency(const CellPos& value_pos,
+                                            const CellPos& key_pos,
+                                            Dependencies& deps) noexcept
     -> void {
-  if (is_in_dependencies(used_pos)) {
-    auto& affected_positions = m_dependencies.at(used_pos);
-    affected_positions.insert(affected_pos);
+  if (is_in_dependencies(key_pos, deps)) {
+    auto& value_positions = deps.at(key_pos);
+    value_positions.insert(value_pos);
     return;
   }
-  m_dependencies.insert({used_pos, {affected_pos}});
+  deps.insert({key_pos, {value_pos}});
 }
 
-auto DependenciesHandler::is_in_dependencies(
-    const CellPos& used_pos) const noexcept -> bool {
-  return m_dependencies.find(used_pos) != m_dependencies.end();
+auto DependenciesHandler::is_in_dependencies(const CellPos& key_pos,
+                                             const Dependencies& deps) noexcept
+    -> bool {
+  return deps.find(key_pos) != deps.cend();
 }
 
 auto DependenciesHandler::col_idx_to_letter_str(

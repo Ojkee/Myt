@@ -33,6 +33,10 @@ class State : public QObject {
   [[nodiscard]] auto get_dependencies() const noexcept -> const Dependencies {
     return m_dependencies_handler.get_dependencies();
   }
+  [[nodiscard]] auto get_dependencies_uses() const noexcept
+      -> const Dependencies {
+    return m_dependencies_handler.get_dependencies_uses();
+  }
 
  private:
   auto save_data_cell(const CellPos& pos, const DataCell& data_cell) noexcept

@@ -42,7 +42,7 @@ auto State::eval_save(const QString& raw_content, const CellLimitType& col,
   const auto obj = Evaluator::evaluate(parsed, cells);
   const auto data_cell = DataCell{raw_content_str, obj};
   save_data_cell({col, row}, data_cell);
-  m_dependencies_handler.catch_dependencies({col, row}, parsed);
+  m_dependencies_handler.update_dependencies({col, row}, parsed);
 }
 
 auto State::log_cells() const noexcept -> void {

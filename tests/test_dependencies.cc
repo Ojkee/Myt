@@ -38,7 +38,61 @@ struct StringMaker<Dependencies> {
 };
 }  // namespace Catch
 
-TEST_CASE("Basic dependencies") {
+TEST_CASE("Dependencies insertions") {
+  using cellInputs = std::vector<std::tuple<std::string, CellPos>>;
+  using DepsAffected = Dependencies;
+  using DepsUses = Dependencies;
+  using testCases = std::vector<std::tuple<cellInputs, DepsAffected, DepsUses>>;
+
+  testCases cases = {
+      {
+          cellInputs{
+              {"=B2", CellPos{1, 1}},
+              {"=B5", CellPos{1, 2}},
+              {"=B3", CellPos{1, 3}},
+          },
+          Dependencies{
+              {CellPos{"B2"}, {CellPos{"A1"}}},
+              {CellPos{"B5"}, {CellPos{"A2"}}},
+              {CellPos{"B3"}, {CellPos{"A3"}}},
+          },
+          Dependencies{
+              {CellPos{"A1"}, {CellPos{"B2"}}},
+              {CellPos{"A2"}, {CellPos{"B5"}}},
+              {CellPos{"A3"}, {CellPos{"B3"}}},
+          },
+      },
+      {
+          cellInputs{
+              {"=B2+B8", CellPos{1, 1}},
+              {"=B5*B5+B8", CellPos{1, 2}},
+              {"=B5*(B5+B8)/4-B5", CellPos{1, 3}},
+          },
+          Dependencies{
+              {CellPos{"B2"}, {CellPos{"A1"}}},
+              {CellPos{"B8"}, {CellPos{"A1"}, CellPos{"A2"}, CellPos{"A3"}}},
+              {CellPos{"B5"}, {CellPos{"A2"}, CellPos{"A3"}}},
+          },
+          Dependencies{
+              {CellPos{"A1"}, {CellPos{"B2"}, CellPos{"B8"}}},
+              {CellPos{"A2"}, {CellPos{"B5"}, CellPos{"B8"}}},
+              {CellPos{"A3"}, {CellPos{"B5"}, CellPos{"B8"}}},
+          },
+      },
+  };
+
+  for (auto& [inputs, deps_affected, deps_uses] : cases) {
+    State state{};
+    for (const auto& [input, pos] : inputs) {
+      const auto q_input = QString::fromStdString(input);
+      state.eval_save(q_input, pos.col, pos.row);
+    }
+    CHECK(state.get_dependencies() == deps_affected);
+    CHECK(state.get_dependencies_uses() == deps_uses);
+  }
+}
+
+TEST_CASE("Dependencies updates") {
   using cellInputs = std::vector<std::tuple<std::string, CellPos>>;
   using testCases = std::vector<std::tuple<cellInputs, Dependencies>>;
 
@@ -47,21 +101,24 @@ TEST_CASE("Basic dependencies") {
           cellInputs{
               {"=B2", CellPos{1, 1}},
               {"=B5", CellPos{1, 2}},
+              {"=B3", CellPos{1, 3}},
+              {"=B3", CellPos{1, 1}},
           },
           Dependencies{
-              {CellPos{"B2"}, {CellPos{"A1"}}},
               {CellPos{"B5"}, {CellPos{"A2"}}},
+              {CellPos{"B3"}, {CellPos{"A3"}, CellPos{"A1"}}},
           },
       },
       {
           cellInputs{
               {"=B2+B8", CellPos{1, 1}},
               {"=B5*B5+B8", CellPos{1, 2}},
+              {"=B5*(B5+B8)/4-B5", CellPos{1, 3}},
           },
           Dependencies{
               {CellPos{"B2"}, {CellPos{"A1"}}},
-              {CellPos{"B8"}, {CellPos{"A1"}, CellPos{"A2"}}},
-              {CellPos{"B5"}, {CellPos{"A2"}}},
+              {CellPos{"B8"}, {CellPos{"A1"}, CellPos{"A2"}, CellPos{"A3"}}},
+              {CellPos{"B5"}, {CellPos{"A2"}, CellPos{"A3"}}},
           },
       },
   };
