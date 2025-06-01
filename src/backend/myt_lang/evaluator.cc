@@ -20,7 +20,7 @@ auto Evaluator::evaluate(const ParsingResult& parsed_result,
     return MS_T(ErrorObject, err->content);
   }
 
-  const auto expr = std::get<ExpressionPtr>(parsed_result).get();
+  const auto expr = std::get<ExpressionSharedPtr>(parsed_result).get();
   return Evaluator::evaluate_expression(*expr, cells);
 }
 
@@ -142,6 +142,7 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
   return MS_T(NilObject, );
 }
 
+// TODO MOVE GEN CELLS INTO INFIX
 auto Evaluator::eval_infix_colon(const ExpressionCell& lhs_cell,
                                  const ExpressionCell& rhs_cell,
                                  const CellMap& cells) noexcept
@@ -164,7 +165,7 @@ auto Evaluator::eval_infix_colon(const ExpressionCell& lhs_cell,
     return err;
   }
   const auto cells_range = &std::get<std::vector<MytObjectPtr>>(cells_result);
-  const auto range_str = lhs_str + ":" + rhs_pos_str;
+  const auto range_str = lhs_str + ":" + rhs_str;
   return std::make_shared<CellRangeObject>(range_str, *cells_range);
 }
 

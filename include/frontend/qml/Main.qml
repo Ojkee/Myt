@@ -13,7 +13,7 @@ ApplicationWindow {
     id: gridView
     interactive: false
     anchors.fill: parent
-    cellWidth: 96
+    cellWidth: 256//96
     cellHeight: 36
 
     property int colCount: Math.floor(parent.width / cellWidth)

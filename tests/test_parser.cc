@@ -100,7 +100,7 @@ TEST_CASE("Parsing valid inputs") {
       FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
-    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<ExpressionSharedPtr>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
@@ -144,7 +144,7 @@ TEST_CASE("Parsing precendence inputs") {
       FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
-    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<ExpressionSharedPtr>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
@@ -169,7 +169,7 @@ TEST_CASE("Parsing precendence inputs grouped") {
       FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
-    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<ExpressionSharedPtr>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
@@ -198,7 +198,7 @@ TEST_CASE("Parsing call expressions") {
       FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
-    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<ExpressionSharedPtr>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }
@@ -231,7 +231,7 @@ TEST_CASE("Parsing float expressions") {
       FAIL("Want Expression, got ParsingError:\n\t" + err.content + " in: `" +
            input + "`");
     }
-    const auto expr = &std::get<std::unique_ptr<Expression>>(parsed);
+    const auto expr = &std::get<ExpressionSharedPtr>(parsed);
     if (expr == nullptr) {
       FAIL("Want Expression, got nullptr");
     }

@@ -18,17 +18,19 @@ auto Parser::print_result(const ParsingResult& result) noexcept -> void {
     std::cout << err.content << "\n";
     return;
   }
-  const auto expr = &std::get<ExpressionPtr>(result);
+  const auto expr = &std::get<ExpressionSharedPtr>(result);
   std::cout << expr->get()->to_string() << "\n";
 }
 
 auto Parser::parse(const Tokens& tokens) noexcept -> ParsingResult {
+  using StringLiteral = ExpressionLiteral<std::string>;
+
   if (tokens.size() == 0) {
-    return std::make_unique<ExpressionLiteral<std::string>>("");
+    return std::make_shared<StringLiteral>("");
   }
   if (tokens[0].type != TokenType::Assign) {
     const auto concat_content = Parser::concat_token_literals(0, tokens);
-    return std::make_unique<ExpressionLiteral<std::string>>(concat_content);
+    return std::make_shared<StringLiteral>(concat_content);
   }
   std::size_t current_idx{1};
   auto expr_result =
@@ -37,12 +39,12 @@ auto Parser::parse(const Tokens& tokens) noexcept -> ParsingResult {
     const auto rest_concat = Parser::concat_token_literals(current_idx, tokens);
     return ParsingError{"Couldn't parse: `" + rest_concat + "`"};
   }
-  return expr_result;
+  return std::shared_ptr(std::move(std::get<ExpressionPtr>(expr_result)));
 }
 
 auto Parser::parse_expression(std::size_t& token_idx, const Tokens& tokens,
                               const Precendence&& precendence) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   auto lhs_result = Parser::parse_prefix_fn(token_idx, tokens);
   if (std::holds_alternative<ParsingError>(lhs_result)) {
     return lhs_result;
@@ -65,7 +67,8 @@ auto Parser::parse_expression(std::size_t& token_idx, const Tokens& tokens,
 }
 
 auto Parser::parse_prefix_fn(std::size_t& token_idx,
-                             const Tokens& tokens) noexcept -> ParsingResult {
+                             const Tokens& tokens) noexcept
+    -> ParsingUniqueResult {
   const auto current_token = tokens.at(token_idx);
   if (Parser::is_in_fns(prefix_fns, current_token.type)) {
     const auto prefixFn = prefix_fns.at(current_token.type);
@@ -141,7 +144,7 @@ auto Parser::parse_call_arguments(std::size_t& token_idx,
 // PREFIX
 auto Parser::parse_prefix_expression(std::size_t& token_idx,
                                      const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   const auto prefix_token = tokens.at(token_idx++);
   auto rhs_result =
       Parser::parse_expression(token_idx, tokens, Precendence::Prefix);
@@ -167,7 +170,8 @@ auto Parser::parse_cell_identifier(std::size_t& token_idx,
 }
 
 auto Parser::parse_int_literal(std::size_t& token_idx,
-                               const Tokens& tokens) noexcept -> ParsingResult {
+                               const Tokens& tokens) noexcept
+    -> ParsingUniqueResult {
   const auto int_token = tokens.at(token_idx++);
   try {
     const auto tokenValue = std::stoi(int_token.literal);
@@ -183,7 +187,7 @@ auto Parser::parse_int_literal(std::size_t& token_idx,
 
 auto Parser::parse_float_literal(std::size_t& token_idx,
                                  const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   const auto float_token = tokens.at(token_idx++);
   const auto value = std::stod(float_token.literal);
   const auto value_correct_type = static_cast<FloatType>(value);
@@ -192,21 +196,21 @@ auto Parser::parse_float_literal(std::size_t& token_idx,
 
 auto Parser::parse_bool_literal(std::size_t& token_idx,
                                 const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   const auto token_value = tokens.at(token_idx++).literal == "true";
   return std::make_unique<ExpressionLiteral<bool>>(token_value);
 }
 
 auto Parser::parse_string_literal(std::size_t& token_idx,
                                   const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   const auto token_value = tokens.at(token_idx++).literal;
   return std::make_unique<ExpressionLiteral<std::string>>(token_value);
 }
 
 auto Parser::parse_grouped_expression(std::size_t& token_idx,
                                       const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   auto expr =
       Parser::parse_expression(++token_idx, tokens, Precendence::Lowest);
   if (tokens.at(token_idx).type != TokenType::RParen) {
@@ -221,7 +225,7 @@ auto Parser::parse_grouped_expression(std::size_t& token_idx,
 auto Parser::parse_infix_expression(ExpressionPtr lhs_expression,
                                     std::size_t& token_idx,
                                     const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   const auto operator_token = tokens.at(token_idx++);
   const auto precendence = AstUtils::token_to_precendece(operator_token.type);
   auto rhs_result =
@@ -237,7 +241,7 @@ auto Parser::parse_infix_expression(ExpressionPtr lhs_expression,
 auto Parser::parse_fn_call_expression(ExpressionPtr lhs_expression,
                                       std::size_t& token_idx,
                                       const Tokens& tokens) noexcept
-    -> ParsingResult {
+    -> ParsingUniqueResult {
   auto args_result = Parser::parse_call_arguments(++token_idx, tokens);
   if (std::holds_alternative<ParsingError>(args_result)) {
     return std::get<ParsingError>(args_result);

@@ -8,11 +8,14 @@
 - [x] Error handling
 - [x] Few builtins
 - [ ] Connect to ui
+    - [x] Working interpreter 
+    - [ ] Scrolling should update value positions
+    - [ ] Cells interactions and updates
 
 ## Extra
 - [ ] Drag&Drop csv files
 - [ ] Auto resize number of rows and cols 
-- [ ] Resize window
+- [x] Resize window
 - [ ] Move cells around
 - [ ] Lambda 
 

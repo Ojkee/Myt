@@ -60,8 +60,8 @@ class Evaluator {
                                                 const CellPos& end) noexcept
       -> std::vector<CellPos> {
     std::vector<CellPos> ret_val{};
-    for (CellLimitType i{begin.col}; i <= end.col; ++i) {
-      for (CellLimitType j{begin.row}; j <= end.row; ++j) {
+    for (auto i{begin.col}; i <= end.col; ++i) {
+      for (auto j{begin.row}; j <= end.row; ++j) {
         const auto pos = CellPos{i, j};
         ret_val.emplace_back(pos);
       }
