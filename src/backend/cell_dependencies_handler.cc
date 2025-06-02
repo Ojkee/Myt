@@ -1,5 +1,6 @@
 #include "../../include/backend/cell_dependencies_handler.hpp"
 
+#include <cassert>
 #include <string>
 
 #include "backend/myt_lang/ast.hpp"
@@ -15,19 +16,39 @@ auto DependenciesHandler::update_dependencies(
     return;
   }
   const auto& expr = std::get<ExpressionSharedPtr>(parsing_result);
+  clear_dependencies_row(affected_pos);
   traverse_expression(affected_pos, *expr);
+}
+
+auto DependenciesHandler::clear_dependencies_row(const CellPos& pos) noexcept
+    -> void {
+  if (!is_in_dependencies(pos, m_dependencies_uses)) {
+    return;
+  }
+  {
+    auto& used = m_dependencies_uses.at(pos);
+    for (const auto& used_pos : used) {
+      m_dependencies.at(used_pos).erase(pos);
+      if (m_dependencies.at(used_pos).empty()) {
+        m_dependencies.erase(used_pos);
+      }
+    }
+  }
+  m_dependencies_uses.erase(pos);
 }
 
 auto DependenciesHandler::traverse_expression(const CellPos& affected_pos,
                                               const Expression& expr) noexcept
     -> void {
-  if (auto infix = dynamic_cast<const ExpressionInfix*>(&expr)) {
+  if (auto expr_cell_range = dynamic_cast<const ExpressionCellRange*>(&expr)) {
+    const auto cell_range = expr_cell_range->generate_range();
+    for (const auto& pos : cell_range) {
+      append_dependency(affected_pos, pos, m_dependencies);
+      append_dependency(pos, affected_pos, m_dependencies_uses);
+    }
+  } else if (auto infix = dynamic_cast<const ExpressionInfix*>(&expr)) {
     const auto& lhs = infix->get_lhs_expression();
     const auto& rhs = infix->get_rhs_expression();
-    if (infix->get_operator_token().type == TokenType::Colon) {
-      // TODO: RANGE
-      return;
-    }
     traverse_expression(affected_pos, lhs);
     traverse_expression(affected_pos, rhs);
   } else if (auto prefix = dynamic_cast<const ExpressionPrefix*>(&expr)) {
@@ -38,6 +59,10 @@ auto DependenciesHandler::traverse_expression(const CellPos& affected_pos,
     const auto used_pos = CellPos{cell_token.literal};
     append_dependency(affected_pos, used_pos, m_dependencies);
     append_dependency(used_pos, affected_pos, m_dependencies_uses);
+  } else if (auto call = dynamic_cast<const ExpressionFnCall*>(&expr)) {
+    for (const auto& arg : call->get_arguments()) {
+      traverse_expression(affected_pos, *arg);
+    }
   }
 }
 

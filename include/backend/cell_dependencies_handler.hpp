@@ -32,25 +32,13 @@ class DependenciesHandler {
  private:
   auto traverse_expression(const CellPos& affected_pos,
                            const Expression& expr) noexcept -> void;
+  auto clear_dependencies_row(const CellPos& pos) noexcept -> void;
   auto append_dependency(const CellPos& value_pos, const CellPos& key_pos,
                          Dependencies& deps) noexcept -> void;
   static auto is_in_dependencies(const CellPos& key_pos,
                                  const Dependencies& deps) noexcept -> bool;
   [[nodiscard]] auto col_idx_to_letter_str(
       const CellLimitType& n) const noexcept -> std::string;
-
-  [[nodiscard]] static auto generate_cell_range(const CellPos& begin,
-                                                const CellPos& end) noexcept
-      -> std::vector<CellPos> {
-    std::vector<CellPos> ret_val{};
-    for (auto i{begin.col}; i <= end.col; ++i) {
-      for (auto j{begin.row}; j <= end.row; ++j) {
-        const auto pos = CellPos{i, j};
-        ret_val.emplace_back(pos);
-      }
-    }
-    return ret_val;
-  }
 
   Dependencies m_dependencies;       // {1, 1}: '=B3*3' => B3: {A1} AFFECTS
   Dependencies m_dependencies_uses;  // {1, 1}: '=B3*3' => A1: {B3} USES
