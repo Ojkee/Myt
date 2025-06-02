@@ -85,7 +85,7 @@ TEST_CASE("Parsing valid inputs") {
                          std::make_unique<ExpressionLiteral<int>>(5),
                          Token{TokenType::NotEq, "!="},
                          std::make_unique<ExpressionLiteral<int>>(6)));
-  cases.emplace_back("= A5:B3", std::make_unique<ExpressionInfix>(
+  cases.emplace_back("= A5:B3", std::make_unique<ExpressionCellRange>(
                                     std::make_unique<ExpressionCell>(
                                         Token{TokenType::CellIdentifier, "A5"}),
                                     Token{TokenType::Colon, ":"},

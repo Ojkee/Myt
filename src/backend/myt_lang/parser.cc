@@ -222,6 +222,7 @@ auto Parser::parse_grouped_expression(std::size_t& token_idx,
 }
 
 // INFIX
+template <class InfixType>
 auto Parser::parse_infix_expression(ExpressionPtr lhs_expression,
                                     std::size_t& token_idx,
                                     const Tokens& tokens) noexcept
@@ -234,8 +235,8 @@ auto Parser::parse_infix_expression(ExpressionPtr lhs_expression,
     return rhs_result;
   }
   const auto rhs_expression = &std::get<ExpressionPtr>(rhs_result);
-  return std::make_unique<ExpressionInfix>(
-      std::move(lhs_expression), operator_token, std::move(*rhs_expression));
+  return std::make_unique<InfixType>(std::move(lhs_expression), operator_token,
+                                     std::move(*rhs_expression));
 }
 
 auto Parser::parse_fn_call_expression(ExpressionPtr lhs_expression,

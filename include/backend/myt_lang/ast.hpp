@@ -10,6 +10,7 @@
 #include <typeinfo>
 #include <vector>
 
+#include "backend/myt_lang/cell_pos.hpp"
 #include "token.hpp"
 
 class Expression;
@@ -180,10 +181,27 @@ class ExpressionInfix : public Expression {
     return *m_rhs;
   }
 
- private:
+ protected:
   ExpressionPtr m_lhs;
   Token m_operator_token;
   ExpressionPtr m_rhs;
+};
+
+class ExpressionCellRange : public ExpressionInfix {
+ public:
+  ExpressionCellRange() = delete;
+  ExpressionCellRange(ExpressionPtr&& lhs, const Token& op, ExpressionPtr&& rhs)
+      : ExpressionInfix(std::move(lhs), op, std::move(rhs)) {};
+
+  auto to_string() const -> std::string override {
+    return "range(" + m_lhs->to_string() + m_operator_token.literal +
+           m_rhs->to_string() + ")";
+  };
+
+  [[nodiscard]] auto generate_range() const noexcept
+      -> const std::vector<CellPos>;
+  [[nodiscard]] auto get_cells_strs() const noexcept
+      -> const std::tuple<std::string, std::string>;
 };
 
 class ExpressionCell : public Expression {
@@ -246,7 +264,5 @@ class ExpressionFnCall : public Expression {
   ExpressionPtr m_fn_identifier;
   Arguments m_arguments;
 };
-
-// TODO: Expression Cell Range
 
 #endif  // !AST_HPP

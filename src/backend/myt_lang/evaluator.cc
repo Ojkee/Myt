@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <memory>
-#include <tuple>
 #include <variant>
 #include <vector>
 
@@ -49,6 +48,9 @@ auto Evaluator::evaluate_expression(const Expression& expr,
 
   } else if (const auto expr_prefix = D_CAST(ExpressionPrefix, &expr)) {
     return Evaluator::eval_prefix(*expr_prefix, cells);
+
+  } else if (const auto expr_cell_range = D_CAST(ExpressionCellRange, &expr)) {
+    return Evaluator::eval_cell_range(*expr_cell_range, cells);
 
   } else if (const auto expr_infix = D_CAST(ExpressionInfix, &expr)) {
     return Evaluator::eval_infix(*expr_infix, cells);
@@ -126,46 +128,33 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
         if (int_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
       }
       return lhs_obj->div(rhs_obj);
-    case TokenType::Colon:
-      if (auto lhs_cell = D_CAST(ExpressionCell, &expr_lhs)) {
-        if (auto rhs_cell = D_CAST(ExpressionCell, &expr_rhs)) {
-          return Evaluator::eval_infix_colon(*lhs_cell, *rhs_cell, cells);
-        } else {
-          return MS_T(ErrorObject, "Wrong type");
-        }
-      } else {
-        return MS_T(ErrorObject, "Wrong type");
-      }
     default:
       return MS_T(ErrorObject, "Unimplemented operator " + op_token.literal);
   }
   return MS_T(NilObject, );
 }
 
-// TODO MOVE GEN CELLS INTO INFIX
-auto Evaluator::eval_infix_colon(const ExpressionCell& lhs_cell,
-                                 const ExpressionCell& rhs_cell,
-                                 const CellMap& cells) noexcept
-    -> MytObjectPtr {
-  const auto lhs_pos_str = lhs_cell.get_cell_token().literal;
-  const auto rhs_pos_str = rhs_cell.get_cell_token().literal;
+auto Evaluator::eval_cell_range(const ExpressionCellRange& expr_cell_range,
+                                const CellMap& cells) noexcept -> MytObjectPtr {
+  const auto& expr_lhs = expr_cell_range.get_lhs_expression();
+  const auto& expr_rhs = expr_cell_range.get_rhs_expression();
 
-  const auto pos_a = CellPos{lhs_pos_str};
-  const auto pos_b = CellPos{rhs_pos_str};
-
-  const auto [lhs_pos, rhs_pos, lhs_str, rhs_str] =
-      (pos_a < pos_b) ? std::make_tuple(pos_a, pos_b, lhs_pos_str, rhs_pos_str)
-                      : std::make_tuple(pos_b, pos_a, rhs_pos_str, lhs_pos_str);
-
-  const auto positions = Evaluator::generate_cell_range(lhs_pos, rhs_pos);
-  const auto cells_result = Evaluator::fill_cell_range(positions, cells);
+  auto lhs_cell = D_CAST(ExpressionCell, &expr_lhs);
+  auto rhs_cell = D_CAST(ExpressionCell, &expr_rhs);
+  if (lhs_cell == nullptr || rhs_cell == nullptr) {
+    return MS_T(ErrorObject,
+                "Wrong type, cell range requires `CellRow:CellCol`");
+  }
+  const auto range_positions = expr_cell_range.generate_range();
+  const auto cells_result = Evaluator::fill_cell_range(range_positions, cells);
 
   if (std::holds_alternative<std::shared_ptr<ErrorObject>>(cells_result)) {
     const auto& err = std::get<std::shared_ptr<ErrorObject>>(cells_result);
     return err;
   }
-  const auto cells_range = &std::get<std::vector<MytObjectPtr>>(cells_result);
+  const auto [lhs_str, rhs_str] = expr_cell_range.get_cells_strs();
   const auto range_str = lhs_str + ":" + rhs_str;
+  const auto cells_range = &std::get<std::vector<MytObjectPtr>>(cells_result);
   return std::make_shared<CellRangeObject>(range_str, *cells_range);
 }
 

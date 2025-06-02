@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -88,6 +89,7 @@ class Parser {
   };
 
   // INFIX
+  template <typename InfixType>
   [[nodiscard]] static auto parse_infix_expression(
       ExpressionPtr lhs_expression, std::size_t& token_idx,
       const Tokens& tokens) noexcept -> ParsingUniqueResult;
@@ -96,17 +98,17 @@ class Parser {
       const Tokens& tokens) noexcept -> ParsingUniqueResult;
 
   inline static const std::unordered_map<TokenType, InfixFn> infix_fns = {
-      {TokenType::Plus, parse_infix_expression},
-      {TokenType::Minus, parse_infix_expression},
-      {TokenType::Asterisk, parse_infix_expression},
-      {TokenType::Slash, parse_infix_expression},
-      {TokenType::Colon, parse_infix_expression},
-      {TokenType::Eq, parse_infix_expression},
-      {TokenType::NotEq, parse_infix_expression},
-      {TokenType::Gt, parse_infix_expression},
-      {TokenType::Ge, parse_infix_expression},
-      {TokenType::Lt, parse_infix_expression},
-      {TokenType::Le, parse_infix_expression},
+      {TokenType::Plus, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Minus, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Asterisk, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Slash, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Colon, parse_infix_expression<ExpressionCellRange>},
+      {TokenType::Eq, parse_infix_expression<ExpressionInfix>},
+      {TokenType::NotEq, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Gt, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Ge, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Lt, parse_infix_expression<ExpressionInfix>},
+      {TokenType::Le, parse_infix_expression<ExpressionInfix>},
       {TokenType::LParen, parse_fn_call_expression},
   };
 };

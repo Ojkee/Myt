@@ -1,6 +1,8 @@
 #ifndef EVALUATOR_HPP
 #define EVALUATOR_HPP
 
+#include <type_traits>
+
 #include "backend/myt_lang/ast.hpp"
 #include "backend/myt_lang/cell_pos.hpp"
 #include "backend/myt_lang/myt_object.hpp"
@@ -45,12 +47,11 @@ class Evaluator {
       -> MytObjectPtr;
   [[nodiscard]] static auto eval_prefix_minus(MytObjectPtr obj) noexcept
       -> MytObjectPtr;
-  [[nodiscard]] static auto eval_infix(const ExpressionInfix& exrp_infix,
+  [[nodiscard]] static auto eval_infix(const ExpressionInfix& expr_infix,
                                        const CellMap& cells) noexcept
       -> MytObjectPtr;
-  [[nodiscard]] static auto eval_infix_colon(const ExpressionCell& lhs_cell,
-                                             const ExpressionCell& rhs_cell,
-                                             const CellMap& cells) noexcept
+  [[nodiscard]] static auto eval_cell_range(
+      const ExpressionCellRange& expr_cell_range, const CellMap& cells) noexcept
       -> MytObjectPtr;
   [[nodiscard]] static auto eval_fn_call(const ExpressionFnCall& expr_fn_call,
                                          const CellMap& cells) noexcept
