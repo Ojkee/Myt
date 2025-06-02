@@ -123,9 +123,11 @@ auto Evaluator::eval_infix(const ExpressionInfix& expr_infix,
       return lhs_obj->mul(rhs_obj);
     case TokenType::Slash:
       if (const auto float_obj = DP_CAST_VO_T(FloatType, rhs_obj)) {
-        if (float_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
+        if (float_obj.get()->get_value() == 0)
+          return ZERO_DIV_ERR;
       } else if (const auto int_obj = DP_CAST_VO_T(int, rhs_obj)) {
-        if (int_obj.get()->get_value() == 0) return ZERO_DIV_ERR;
+        if (int_obj.get()->get_value() == 0)
+          return ZERO_DIV_ERR;
       }
       return lhs_obj->div(rhs_obj);
     default:
@@ -143,7 +145,8 @@ auto Evaluator::eval_cell_range(const ExpressionCellRange& expr_cell_range,
   auto rhs_cell = D_CAST(ExpressionCell, &expr_rhs);
   if (lhs_cell == nullptr || rhs_cell == nullptr) {
     return MS_T(ErrorObject,
-                "Wrong type, cell range requires `CellRow:CellCol`");
+                "Wrong type, cell range requires "
+                "`CellRow:CellCol`");
   }
   const auto range_positions = expr_cell_range.generate_range();
   const auto cells_result = Evaluator::fill_cell_range(range_positions, cells);

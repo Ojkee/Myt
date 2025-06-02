@@ -13,7 +13,7 @@ ApplicationWindow {
     id: gridView
     interactive: false
     anchors.fill: parent
-    cellWidth: 256//96
+    cellWidth: 96
     cellHeight: 36
 
     property int colCount: Math.floor(parent.width / cellWidth)
@@ -45,4 +45,16 @@ ApplicationWindow {
       }
     }
   } 
+
+  Connections {
+    target: windowState
+    function onRequestCellUpdate(col, row) {
+      for (let i = 0; i < gridView.count; ++i) {
+        const item = gridView.itemAtIndex(i)
+        if (item && item.col === col && item.row === row) {
+          item.label = windowState.get_content_by_pos(col, row)
+        }
+      }
+    }
+  }
 }

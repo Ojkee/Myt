@@ -27,15 +27,17 @@ Rectangle {
   Text {
     visible: !isEditing
     anchors.centerIn: parent
-    text: index === 0 ? 
-      "" :
-      (isFirstRow ?
-        windowUtils.col_idx_to_letter(col) : 
-        (isFirstCol ?
-          row :
-          (label === "" ?
-            windowUtils.col_idx_to_letter(col) + "" + row :
-            windowState.get_content_by_pos(col, row))))
+    text: {
+      if (index === 0)
+        return ""
+      if (isFirstRow)
+        return windowUtils.col_idx_to_letter(col)
+      if (isFirstCol)
+        return row
+      if (label === "")
+        return windowUtils.col_idx_to_letter(col) + "" + row;
+      return label
+    }
     color: (isFirstCol || isFirstRow || label !== "") ? 
       "#FFF8E7" :
       "#777" 

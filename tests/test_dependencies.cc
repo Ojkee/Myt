@@ -47,9 +47,9 @@ TEST_CASE("Dependencies insertions") {
   testCases cases = {
       {
           cellInputs{
-              {"=B2", CellPos{1, 1}},
-              {"=B5", CellPos{1, 2}},
-              {"=B3", CellPos{1, 3}},
+              {"=B2", CellPos{"A1"}},
+              {"=B5", CellPos{"A2"}},
+              {"=B3", CellPos{"A3"}},
           },
           Dependencies{
               {CellPos{"B2"}, {CellPos{"A1"}}},
@@ -64,9 +64,9 @@ TEST_CASE("Dependencies insertions") {
       },
       {
           cellInputs{
-              {"=B2+B8", CellPos{1, 1}},
-              {"=B5*B5+B8", CellPos{1, 2}},
-              {"=B5*(B5+B8)/4-B5", CellPos{1, 3}},
+              {"=B2+B8", CellPos{"A1"}},
+              {"=B5*B5+B8", CellPos{"A2"}},
+              {"=B5*(B5+B8)/4-B5", CellPos{"A3"}},
           },
           Dependencies{
               {CellPos{"B2"}, {CellPos{"A1"}}},
@@ -81,7 +81,7 @@ TEST_CASE("Dependencies insertions") {
       },
       {
           cellInputs{
-              {"=Sum(B1:B3, B5)", CellPos{1, 1}},
+              {"=Sum(B1:B3, B5)", CellPos{"A1"}},
           },
           Dependencies{
               {CellPos{"B1"}, {CellPos{"A1"}}},
@@ -116,10 +116,10 @@ TEST_CASE("Dependencies updates") {
   testCases cases = {
       {
           cellInputs{
-              {"=B2", CellPos{1, 1}},
-              {"=B5", CellPos{1, 2}},
-              {"=B3", CellPos{1, 3}},
-              {"=B3", CellPos{1, 1}},
+              {"=B2", CellPos{"A1"}},
+              {"=B5", CellPos{"A2"}},
+              {"=B3", CellPos{"A3"}},
+              {"=B3", CellPos{"A1"}},
           },
           Dependencies{
               {CellPos{"B5"}, {CellPos{"A2"}}},
@@ -133,10 +133,10 @@ TEST_CASE("Dependencies updates") {
       },
       {
           cellInputs{
-              {"=B2+B8", CellPos{1, 1}},
-              {"=B5*B5+B8", CellPos{1, 2}},
-              {"=B5*(B5+B8)/4-B5", CellPos{1, 1}},
-              {"", CellPos{1, 2}},
+              {"=B2+B8", CellPos{"A1"}},
+              {"=B5*B5+B8", CellPos{"A2"}},
+              {"=B5*(B5+B8)/4-B5", CellPos{"A1"}},
+              {"", CellPos{"A2"}},
           },
           Dependencies{
               {CellPos{"B8"}, {CellPos{"A1"}}},
@@ -148,8 +148,8 @@ TEST_CASE("Dependencies updates") {
       },
       {
           cellInputs{
-              {"=Sum(B1:B3, B5)", CellPos{1, 1}},
-              {"=Sum(B2:B4, B6)", CellPos{1, 1}},
+              {"=Sum(B1:B3, B5)", CellPos{"A1"}},
+              {"=Sum(B2:B4, B6)", CellPos{"A1"}},
           },
           Dependencies{
               {CellPos{"B2"}, {CellPos{"A1"}}},
@@ -161,6 +161,22 @@ TEST_CASE("Dependencies updates") {
               {CellPos{"A1"},
                {CellPos{"B2"}, CellPos{"B3"}, CellPos{"B4"}, CellPos{"B6"}}},
           },
+      },
+      {
+          cellInputs{
+              {"= Sum(A2:C4)", CellPos{"A1"}},
+              {"= Sum(\"text that makes error\")", CellPos{"A1"}},
+          },
+          Dependencies{},
+          Dependencies{},
+      },
+      {
+          cellInputs{
+              {"= Sum(A2:C4)", CellPos{"A1"}},
+              {"= Sum(`)", CellPos{"A1"}},  // ` makes parsing error
+          },
+          Dependencies{},
+          Dependencies{},
       },
   };
 
@@ -174,3 +190,46 @@ TEST_CASE("Dependencies updates") {
     CHECK(state.get_dependencies_uses() == deps_uses);
   }
 }
+
+// TODO: UNCOMMENT
+// TEST_CASE("Dependencies cycle detection") {
+//   using cellInputs = std::vector<std::tuple<std::string, CellPos>>;
+//   using DepsAffected = Dependencies;
+//   using DepsUses = Dependencies;
+//   using testCases = std::vector<std::tuple<cellInputs, DepsAffected,
+//   DepsUses>>;
+//
+//   testCases cases = {
+//       {
+//           cellInputs{
+//               {"=A1", CellPos{"A1"}},
+//           },
+//           Dependencies{},
+//           Dependencies{},
+//       },
+//       {
+//           cellInputs{
+//               {"=A2", CellPos{"A1"}},
+//               {"=A3", CellPos{"A2"}},
+//               {"=A1", CellPos{"A3"}},
+//               {"=A4", CellPos{"A1"}},
+//           },
+//           Dependencies{
+//               {CellPos{"A4"}, {CellPos{"A1"}}},
+//           },
+//           Dependencies{
+//               {CellPos{"A1"}, {CellPos{"A4"}}},
+//           },
+//       },
+//   };
+//
+//   for (auto& [inputs, deps_affected, deps_uses] : cases) {
+//     State state{};
+//     for (const auto& [input, pos] : inputs) {
+//       const auto q_input = QString::fromStdString(input);
+//       state.eval_save(q_input, pos.col, pos.row);
+//     }
+//     CHECK(state.get_dependencies() == deps_affected);
+//     CHECK(state.get_dependencies_uses() == deps_uses);
+//   }
+// }

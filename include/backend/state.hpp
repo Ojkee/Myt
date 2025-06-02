@@ -18,10 +18,12 @@ class State : public QObject {
  public:
   explicit State(QObject* parent = nullptr);
 
-  [[nodiscard]] Q_INVOKABLE QString get_content_by_pos(
-      const CellLimitType& col, const CellLimitType& row) noexcept;
-  [[nodiscard]] Q_INVOKABLE QString get_raw_content_by_pos(
-      const CellLimitType& col, const CellLimitType& row) noexcept;
+  [[nodiscard]] Q_INVOKABLE QString
+  get_content_by_pos(const CellLimitType& col,
+                     const CellLimitType& row) noexcept;
+  [[nodiscard]] Q_INVOKABLE QString
+  get_raw_content_by_pos(const CellLimitType& col,
+                         const CellLimitType& row) noexcept;
   Q_INVOKABLE void eval_save(const QString& raw_content,
                              const CellLimitType& col,
                              const CellLimitType& row) noexcept;
@@ -38,9 +40,16 @@ class State : public QObject {
     return m_dependencies_handler.get_dependencies_uses();
   }
 
+ signals:
+  void requestCellUpdate(int col, int row);
+
  private:
+  auto evaluate(const std::string& content, const CellPos& pos) noexcept
+      -> void;
+
   auto save_data_cell(const CellPos& pos, const DataCell& data_cell) noexcept
       -> void;
+  auto reeval_affected(const CellPos& pos) noexcept -> void;
 
   std::size_t m_current_page_idx{};
   std::vector<Page> m_pages;

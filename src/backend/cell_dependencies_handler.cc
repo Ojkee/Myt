@@ -11,16 +11,15 @@
 auto DependenciesHandler::update_dependencies(
     const CellPos& affected_pos, const ParsingResult& parsing_result) noexcept
     -> void {
+  clear_dependencies_pos(affected_pos);
   if (std::holds_alternative<ParsingError>(parsing_result)) {
-    // TODO UPDATE DEPS FOR POS
     return;
   }
   const auto& expr = std::get<ExpressionSharedPtr>(parsing_result);
-  clear_dependencies_row(affected_pos);
   traverse_expression(affected_pos, *expr);
 }
 
-auto DependenciesHandler::clear_dependencies_row(const CellPos& pos) noexcept
+auto DependenciesHandler::clear_dependencies_pos(const CellPos& pos) noexcept
     -> void {
   if (!is_in_dependencies(pos, m_dependencies_uses)) {
     return;
@@ -57,6 +56,9 @@ auto DependenciesHandler::traverse_expression(const CellPos& affected_pos,
   } else if (auto cell = dynamic_cast<const ExpressionCell*>(&expr)) {
     const auto cell_token = cell->get_cell_token();
     const auto used_pos = CellPos{cell_token.literal};
+    if (used_pos == affected_pos) {
+      return;
+    }
     append_dependency(affected_pos, used_pos, m_dependencies);
     append_dependency(used_pos, affected_pos, m_dependencies_uses);
   } else if (auto call = dynamic_cast<const ExpressionFnCall*>(&expr)) {
