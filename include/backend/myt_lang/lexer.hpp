@@ -28,8 +28,8 @@ class Lexer {
   [[nodiscard]] constexpr inline static auto is_numeric(const char& c) noexcept
       -> bool;
   [[nodiscard]] static auto get_sign_token(
-      const std::string_view& content, std::string_view::iterator& cur) noexcept
-      -> std::optional<Token>;
+      const std::string_view& content,
+      std::string_view::iterator& cur) noexcept -> std::optional<Token>;
   [[nodiscard]] static auto read_forward_if(const std::string_view& content,
                                             std::string_view::iterator& cur_it,
                                             const Condition& cond) noexcept

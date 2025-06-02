@@ -145,7 +145,8 @@ class ValueObject : public MytObject {
 
  private:
   template <typename Fn, typename = std::enable_if<std::is_invocable_v<Fn>>>
-  auto numeric_operation(MytObjectPtr other, Fn&& op,
+  auto numeric_operation(MytObjectPtr other,
+                         Fn&& op,
                          const std::string& op_literal) const noexcept
       -> MytObjectPtr {
     if (auto numeric_sub = apply_operation_on_numeric(other, op)) {

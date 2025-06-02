@@ -11,6 +11,8 @@
     - [x] Working interpreter 
     - [ ] Scrolling should update value positions
     - [ ] Cells interactions and updates
+        - [x] Dependencies
+        - [ ] Cycle detection
 
 ## Extra
 - [ ] Drag&Drop csv files

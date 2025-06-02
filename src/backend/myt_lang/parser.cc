@@ -42,7 +42,8 @@ auto Parser::parse(const Tokens& tokens) noexcept -> ParsingResult {
   return std::shared_ptr(std::move(std::get<ExpressionPtr>(expr_result)));
 }
 
-auto Parser::parse_expression(std::size_t& token_idx, const Tokens& tokens,
+auto Parser::parse_expression(std::size_t& token_idx,
+                              const Tokens& tokens,
                               const Precendence&& precendence) noexcept
     -> ParsingUniqueResult {
   auto lhs_result = Parser::parse_prefix_fn(token_idx, tokens);
@@ -86,7 +87,8 @@ auto Parser::concat_token_literals(const std::size_t& start_idx,
     return "";
   }
   auto concat_space_fold = [](const std::string& lhs, const Token& tok) {
-    if (tok.type == TokenType::EndOfCell) return lhs;
+    if (tok.type == TokenType::EndOfCell)
+      return lhs;
     return std::move(lhs) + " " + tok.literal;
   };
   auto begin = tokens.begin() + static_cast<long>(start_idx + 1);

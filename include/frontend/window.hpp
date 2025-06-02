@@ -15,14 +15,15 @@
 class Window {
  public:
   Window() = delete;
-  Window(int argc, char *argv[])
+  Window(int argc, char* argv[])
       : m_wu(), m_state(), m_app(argc, argv), m_engine() {
     const QUrl url{QStringLiteral("qrc:/include/frontend/qml/Main.qml")};
 
     QObject::connect(
         &m_engine, &QQmlApplicationEngine::objectCreated, &m_app,
-        [url](QObject *obj, const QUrl &objUrl) {
-          if (!obj && url == objUrl) QCoreApplication::exit(-1);
+        [url](QObject* obj, const QUrl& objUrl) {
+          if (!obj && url == objUrl)
+            QCoreApplication::exit(-1);
         },
         Qt::QueuedConnection);
 
