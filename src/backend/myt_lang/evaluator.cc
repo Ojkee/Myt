@@ -23,6 +23,10 @@ auto Evaluator::evaluate(const ParsingResult& parsed_result,
   return Evaluator::evaluate_expression(*expr, cells);
 }
 
+auto Evaluator::get_error_obj(const std::string& msg) noexcept -> MytObjectPtr {
+  return MS_T(ErrorObject, msg);
+}
+
 auto Evaluator::evaluate_expression(const Expression& expr,
                                     const CellMap& cells) noexcept
     -> MytObjectPtr {

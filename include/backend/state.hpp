@@ -32,11 +32,12 @@ class State : public QObject {
   auto flush_dependencies() noexcept -> void {
     m_dependencies_handler.flush_dependencies();
   }
-  [[nodiscard]] auto get_dependencies() const noexcept -> const Dependencies {
+  [[nodiscard]] auto get_dependencies() const noexcept
+      -> const DependenciesHandler::Dependencies {
     return m_dependencies_handler.get_dependencies();
   }
   [[nodiscard]] auto get_dependencies_uses() const noexcept
-      -> const Dependencies {
+      -> const DependenciesHandler::Dependencies {
     return m_dependencies_handler.get_dependencies_uses();
   }
 
@@ -49,6 +50,12 @@ class State : public QObject {
 
   auto save_data_cell(const CellPos& pos, const DataCell& data_cell) noexcept
       -> void;
+  template <class Container>
+  auto set_cyclic_dependencies_errors(const Container& pos) noexcept -> void;
+
+  template <class Container>
+  [[nodiscard]] static auto build_cell_pos_str(const Container& c)
+      -> std::string;
   auto reeval_affected(const CellPos& pos) noexcept -> void;
 
   std::size_t m_current_page_idx{};

@@ -4,7 +4,9 @@
 #include <qtmetamacros.h>
 
 #include <array>
+#include <cstddef>
 #include <iostream>
+#include <string>
 
 #include "backend/data_cell.hpp"
 #include "backend/myt_lang/cell_pos.hpp"
@@ -12,7 +14,7 @@
 #include "backend/myt_lang/lexer.hpp"
 #include "backend/myt_lang/myt_object.hpp"
 #include "backend/myt_lang/parser.hpp"
-#include "frontend/window_utils.hpp"
+#include "global_utils/global_utils.hpp"
 
 State::State(QObject* parent)
     : QObject(parent), m_pages({Page{}}), m_dependencies_handler() {}
@@ -54,10 +56,22 @@ auto State::evaluate(const std::string& content, const CellPos& pos) noexcept
   const auto cells = m_pages.at(m_current_page_idx).get_cells();
   const auto tokens = Lexer::tokenize(content);
   const auto parsed = Parser::parse(tokens);
+
+  m_dependencies_handler.update_dependencies(pos, parsed);
+
+  const auto cyclic_pos = m_dependencies_handler.catch_circling_cells_DFS();
+  if (!cyclic_pos.empty()) {
+    m_dependencies_handler.filter_cyclic_dependencies(cyclic_pos);
+    set_cyclic_dependencies_errors(cyclic_pos);
+    for (const auto& c_pos : cyclic_pos) {
+      reeval_affected(c_pos);
+    }
+    return;
+  }
+
   const auto obj = Evaluator::evaluate(parsed, cells);
   const auto data_cell = DataCell{content, obj};
   save_data_cell(pos, data_cell);
-  m_dependencies_handler.update_dependencies(pos, parsed);
   reeval_affected(pos);
 }
 
@@ -65,6 +79,39 @@ auto State::save_data_cell(const CellPos& pos,
                            const DataCell& data_cell) noexcept -> void {
   auto& current_page = m_pages.at(m_current_page_idx);
   current_page.save_cell(data_cell, pos);
+}
+
+template <class Container>
+auto State::set_cyclic_dependencies_errors(const Container& positions) noexcept
+    -> void {
+  const auto positions_str = build_cell_pos_str(positions);
+  const auto err_msg = "CYCLE: " + positions_str;
+  const auto err_obj = Evaluator::get_error_obj(err_msg);
+  const auto cells = m_pages.at(m_current_page_idx).get_cells();
+
+  for (const auto& pos : positions) {
+    if (cells.find(pos) == cells.cend()) {
+      continue;
+    }
+    const auto data_cell = cells.at(pos);
+    const auto content = data_cell.get_raw_content();
+    const auto data_cell_err = DataCell{content, err_obj};
+    save_data_cell(pos, data_cell_err);
+  }
+}
+
+template <class Container>
+auto State::build_cell_pos_str(const Container& c) -> std::string {
+  std::string res{""};
+  std::size_t i{0};
+  for (const auto& pos : c) {
+    res += GlobalUtils::pos_to_str(pos);
+    if (i < c.size() - 1) {
+      res += ", ";
+    }
+    ++i;
+  }
+  return "(" + res + ")";
 }
 
 auto State::reeval_affected(const CellPos& pos) noexcept -> void {

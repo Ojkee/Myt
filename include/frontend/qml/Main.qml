@@ -13,7 +13,7 @@ ApplicationWindow {
     id: gridView
     interactive: false
     anchors.fill: parent
-    cellWidth: 96
+    cellWidth: 352//96 TODO: REMOVE
     cellHeight: 36
 
     property int colCount: Math.floor(parent.width / cellWidth)

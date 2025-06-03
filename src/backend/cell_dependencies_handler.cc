@@ -1,7 +1,6 @@
 #include "../../include/backend/cell_dependencies_handler.hpp"
 
 #include <cassert>
-#include <string>
 
 #include "backend/myt_lang/ast.hpp"
 #include "backend/myt_lang/cell_pos.hpp"
@@ -9,14 +8,36 @@
 #include "backend/myt_lang/token.hpp"
 
 auto DependenciesHandler::update_dependencies(
-    const CellPos& affected_pos, const ParsingResult& parsing_result) noexcept
-    -> void {
+    const CellPos& affected_pos,
+    const ParsingResult& parsing_result) noexcept -> void {
   clear_dependencies_pos(affected_pos);
   if (std::holds_alternative<ParsingError>(parsing_result)) {
     return;
   }
   const auto& expr = std::get<ExpressionSharedPtr>(parsing_result);
   traverse_expression(affected_pos, *expr);
+}
+
+auto DependenciesHandler::flush_dependencies() noexcept -> void {
+  m_dependencies.clear();
+  m_dependencies_uses.clear();
+}
+
+auto DependenciesHandler::get_dependencies() const noexcept
+    -> const Dependencies {
+  return m_dependencies;
+};
+
+auto DependenciesHandler::get_dependencies_uses() const noexcept
+    -> const Dependencies {
+  return m_dependencies_uses;
+};
+
+auto DependenciesHandler::get_affected_positions(const CellPos& pos)
+    const noexcept -> const std::optional<std::unordered_set<CellPos>> {
+  if (!is_in_dependencies(pos, m_dependencies))
+    return std::nullopt;
+  return m_dependencies.at(pos);
 }
 
 auto DependenciesHandler::clear_dependencies_pos(const CellPos& pos) noexcept
@@ -86,12 +107,51 @@ auto DependenciesHandler::is_in_dependencies(const CellPos& key_pos,
   return deps.find(key_pos) != deps.cend();
 }
 
-auto DependenciesHandler::col_idx_to_letter_str(
-    const CellLimitType& n) const noexcept -> std::string {
-  std::string acc = "";
-  for (CellLimitType i = n; i > 0; i /= 26) {
-    i -= 1;
-    acc = (char)((i % 26) + 'A') + acc;
+auto DependenciesHandler::catch_circling_cells_DFS() const noexcept
+    -> std::unordered_set<CellPos> {
+  std::unordered_map<CellPos, VisitState> visit_states;
+  std::unordered_set<CellPos> cycled;
+
+  for (const auto& [node, _] : m_dependencies) {
+    if (visit_states[node] == VisitState::Unvisited) {
+      std::vector<CellPos> path_stack;
+      dfs_visit(node, visit_states, cycled, path_stack);
+    }
   }
-  return acc;
+
+  return cycled;
+}
+
+auto DependenciesHandler::filter_cyclic_dependencies(
+    const CellPosSet& cycled) noexcept -> void {
+  for (const auto& pos : cycled) {
+    clear_dependencies_pos(pos);
+  }
+}
+
+auto DependenciesHandler::dfs_visit(
+    const CellPos& node,
+    std::unordered_map<CellPos, VisitState>& visit_states,
+    std::unordered_set<CellPos>& cycled,
+    std::vector<CellPos>& path_stack) const noexcept -> void {
+  visit_states[node] = VisitState::Visiting;
+  path_stack.push_back(node);
+
+  if (auto it = m_dependencies.find(node); it != m_dependencies.end()) {
+    for (const CellPos& neighbor : it->second) {
+      if (visit_states[neighbor] == VisitState::Visiting) {
+        auto it = std::find(path_stack.begin(), path_stack.end(), neighbor);
+        if (it != path_stack.end()) {
+          for (; it != path_stack.end(); ++it) {
+            cycled.insert(*it);
+          }
+        }
+      } else if (visit_states[neighbor] == VisitState::Unvisited) {
+        dfs_visit(neighbor, visit_states, cycled, path_stack);
+      }
+    }
+  }
+
+  path_stack.pop_back();
+  visit_states[node] = VisitState::Visited;
 }

@@ -27,6 +27,8 @@ class Evaluator {
   [[nodiscard]] static auto evaluate(const ParsingResult& parsed_result,
                                      const CellMap& cells) noexcept
       -> MytObjectPtr;
+  [[nodiscard]] static auto get_error_obj(const std::string& msg) noexcept
+      -> MytObjectPtr;
 
  private:
   [[nodiscard]] static auto evaluate_expression(const Expression& expr,
@@ -51,8 +53,8 @@ class Evaluator {
                                        const CellMap& cells) noexcept
       -> MytObjectPtr;
   [[nodiscard]] static auto eval_cell_range(
-      const ExpressionCellRange& expr_cell_range, const CellMap& cells) noexcept
-      -> MytObjectPtr;
+      const ExpressionCellRange& expr_cell_range,
+      const CellMap& cells) noexcept -> MytObjectPtr;
   [[nodiscard]] static auto eval_fn_call(const ExpressionFnCall& expr_fn_call,
                                          const CellMap& cells) noexcept
       -> MytObjectPtr;
@@ -71,8 +73,8 @@ class Evaluator {
   }
 
   [[nodiscard]] static auto fill_cell_range(
-      const std::vector<CellPos> positions, const CellMap& cells) noexcept
-      -> ObjectsResult {
+      const std::vector<CellPos> positions,
+      const CellMap& cells) noexcept -> ObjectsResult {
     std::vector<MytObjectPtr> cells_range{};
     for (const auto& pos : positions) {
       if (is_in_cells(pos, cells)) {

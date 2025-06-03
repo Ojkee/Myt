@@ -15,6 +15,7 @@
         - [ ] Cycle detection
 
 ## Extra
+- [ ] Refactor reapeated algorithms to Utlis
 - [ ] Drag&Drop csv files
 - [ ] Auto resize number of rows and cols 
 - [x] Resize window
