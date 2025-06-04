@@ -3,9 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
-  border.color: "#333"
-  color: isFirstRow || isFirstCol ? "#888" : (isEditing ? "#333" : "#555")
-
 
   property int colIdx
   property int rowIdx
@@ -15,12 +12,20 @@ Rectangle {
   property bool isFirstRow: rowIdx === 0
 
   property string label: ""
-  property bool isEditing: false
+  property bool isEditing: {
+    return windowState.editingCol === col && windowState.editingRow === row
+  }
+
+  border.color: "#333"
+  color: isFirstRow || isFirstCol ? "#888" : (isEditing ? "#333" : "#555")
 
   MouseArea {
     anchors.fill: parent
     onClicked: {
-      isEditing = !(isFirstRow || isFirstCol)
+      if (!isFirstCol && !isFirstRow) {
+        windowState.editingCol = col
+        windowState.editingRow = row
+      }
     }
   }
 
@@ -58,29 +63,45 @@ Rectangle {
     selectByMouse: true
     cursorVisible: true
 
-    function finishEdit(){
+    function finishEdit() {
       if (text !== "" || (text === "" && label != "")) {
         windowState.eval_save(text, col, row)
         label = windowState.get_content_by_pos(col, row)
       }
-      isEditing = false
+      windowState.editingCol = -1
+      windowState.editingRow = -1
     }
 
     onEditingFinished: {
       finishEdit()
     }
 
-    Keys.onReturnPressed: {
-      finishEdit()
-    }
-
     Keys.onEscapePressed: {
       finishEdit()
     }
-  }
 
-  onColChanged: updateLabel()
-  onRowChanged: updateLabel()
+    Keys.onPressed: (event) => {
+        if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right) {
+            keyNavigationEvent(col + 1, row)
+            event.accepted = true
+        } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Down) {
+            keyNavigationEvent(col, row+1)
+            event.accepted = true
+        } else if (event.key === Qt.Key_Left) {
+            keyNavigationEvent(col-1, row)
+            event.accepted = true
+        } else if (event.key === Qt.Key_Up) {
+            keyNavigationEvent(col, row-1)
+            event.accepted = true
+        }
+    }
+
+    function keyNavigationEvent(newCol, newRow) {
+        finishEdit()
+        windowState.editingCol = newCol
+        windowState.editingRow = newRow
+    }
+  }
 
   function updateLabel() {
     const content = windowState.get_content_by_pos(col, row)

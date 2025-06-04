@@ -1,21 +1,22 @@
-# TODO
+# TODOs
 
-## Essential
+## Essentials
 
 - [x] Lexing cells
 - [x] Parsing cells
 - [x] Evaluate cells
 - [x] Error handling
 - [x] Few builtins
-- [ ] Connect to ui
+- [x] Connect to ui
     - [x] Working interpreter 
-    - [ ] Scrolling should update value positions
+    - [x] Scrolling should update value positions
     - [x] Cells interactions and updates
         - [x] Dependencies
         - [x] Cycle detection
 
-## Extra
-- [ ] Refactor reapeated algorithms to Utlis
+## Extras
+- [ ] Enter and Tab keys selects to down and to right cell respectively
+- [x] Refactor reapeated algorithms to Utlis
 - [ ] Drag&Drop csv files
 - [ ] Auto resize number of rows and cols 
 - [x] Resize window
@@ -23,8 +24,10 @@
 - [ ] Lambda 
 
 ```
-Lambda(x y => Sqrt(x) * y) 
+Lambda(x y => [Exression with 1 output]) 
 
 Apply([Lambda Cell], [Range if multiple params/Cell])
 ```
 
+## Bugs
+- [ ] First selections doesn't unselect cells in UI

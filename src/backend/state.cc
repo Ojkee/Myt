@@ -51,6 +51,34 @@ auto State::log_cells() const noexcept -> void {
   }
 }
 
+auto State::flush_dependencies() noexcept -> void {
+  m_dependencies_handler.flush_dependencies();
+}
+
+auto State::get_dependencies() const noexcept
+    -> const DependenciesHandler::Dependencies {
+  return m_dependencies_handler.get_dependencies();
+}
+
+auto State::get_dependencies_uses() const noexcept
+    -> const DependenciesHandler::Dependencies {
+  return m_dependencies_handler.get_dependencies_uses();
+}
+
+void State::setEditingCol(int col) {
+  if (col != m_editingCol && GlobalUtils::is_in_cell_range(col)) {
+    m_editingCol = col;
+    emit editingColChanged();
+  }
+}
+
+void State::setEditingRow(int row) {
+  if (row != m_editingRow && GlobalUtils::is_in_cell_range(row)) {
+    m_editingRow = row;
+    emit editingRowChanged();
+  }
+}
+
 auto State::evaluate(const std::string& content, const CellPos& pos) noexcept
     -> void {
   const auto cells = m_pages.at(m_current_page_idx).get_cells();

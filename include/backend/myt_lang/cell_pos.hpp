@@ -63,8 +63,9 @@ struct CellPos {
  private:
   static const CellLimitType max_limit =
       std::numeric_limits<CellLimitType>::max();
-  template <typename UnsignedType, typename = typename std::enable_if<
-                                       std::is_unsigned_v<UnsignedType>>::type>
+  template <typename UnsignedType,
+            typename =
+                typename std::enable_if<std::is_unsigned_v<UnsignedType>>::type>
   [[nodiscard]] constexpr static auto in_limit_range(
       const UnsignedType& num) noexcept -> bool {
     return num <= max_limit;

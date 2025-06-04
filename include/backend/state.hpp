@@ -14,10 +14,16 @@
 
 class State : public QObject {
   Q_OBJECT
+  Q_PROPERTY(int editingCol READ editingCol WRITE setEditingCol NOTIFY
+                 editingColChanged)
+  Q_PROPERTY(int editingRow READ editingRow WRITE setEditingRow NOTIFY
+                 editingRowChanged)
 
  public:
   explicit State(QObject* parent = nullptr);
 
+  int editingCol() const { return m_editingCol; }
+  int editingRow() const { return m_editingRow; }
   [[nodiscard]] Q_INVOKABLE QString
   get_content_by_pos(const CellLimitType& col,
                      const CellLimitType& row) noexcept;
@@ -29,20 +35,20 @@ class State : public QObject {
                              const CellLimitType& row) noexcept;
   Q_INVOKABLE void log_cells() const noexcept;
 
-  auto flush_dependencies() noexcept -> void {
-    m_dependencies_handler.flush_dependencies();
-  }
+  auto flush_dependencies() noexcept -> void;
   [[nodiscard]] auto get_dependencies() const noexcept
-      -> const DependenciesHandler::Dependencies {
-    return m_dependencies_handler.get_dependencies();
-  }
+      -> const DependenciesHandler::Dependencies;
   [[nodiscard]] auto get_dependencies_uses() const noexcept
-      -> const DependenciesHandler::Dependencies {
-    return m_dependencies_handler.get_dependencies_uses();
-  }
+      -> const DependenciesHandler::Dependencies;
+
+ public slots:
+  void setEditingCol(int col);
+  void setEditingRow(int row);
 
  signals:
   void requestCellUpdate(int col, int row);
+  void editingColChanged();
+  void editingRowChanged();
 
  private:
   auto evaluate(const std::string& content, const CellPos& pos) noexcept
@@ -57,6 +63,9 @@ class State : public QObject {
   [[nodiscard]] static auto build_cell_pos_str(const Container& c)
       -> std::string;
   auto reeval_affected(const CellPos& pos) noexcept -> void;
+
+  int m_editingCol = -1;
+  int m_editingRow = -1;
 
   std::size_t m_current_page_idx{};
   std::vector<Page> m_pages;
