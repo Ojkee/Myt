@@ -13,7 +13,7 @@ ApplicationWindow {
     id: gridView
     interactive: false
     anchors.fill: parent
-    cellWidth: 352//96
+    cellWidth: 96
     cellHeight: 36
 
     property int colCount: Math.floor(parent.width / cellWidth)
@@ -23,6 +23,23 @@ ApplicationWindow {
 
     model: colCount * rowCount
 
+    function moveCells(c, r, dc, dr) {
+      var x =  c + dc
+      var y = r + dr
+      windowState.editingCol += dc
+      windowState.editingRow += dr
+
+      if (c >= colOffset - 2 + colCount && dc > 0)     // RIGHT
+        gridView.colOffset += dc
+      else if (c > 2 && c <= colOffset + 2 && dc < 0)  // LEFT
+        gridView.colOffset += dc
+
+      if (r >= rowOffset - 2 + rowCount && dr > 0)     // DOWN
+        gridView.rowOffset += dr
+      else if (r > 2 && r <= rowOffset + 2 && dr < 0)  // UP
+        gridView.rowOffset += dr
+    }
+
     delegate: Cell {
       width: gridView.cellWidth
       height: gridView.cellHeight
@@ -30,6 +47,9 @@ ApplicationWindow {
       rowIdx: Math.floor(index / gridView.colCount)
       col: colIdx + gridView.colOffset
       row: rowIdx + gridView.rowOffset
+      onMoveRequested: (c, r, dc, dr) => {
+        gridView.moveCells(c, r, dc, dr)
+      }
     }
 
     WheelHandler {

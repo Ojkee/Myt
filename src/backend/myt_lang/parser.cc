@@ -89,7 +89,7 @@ auto Parser::concat_token_literals(const std::size_t& start_idx,
   const auto concat_space_fold = [](const std::string& lhs, const Token& tok) {
     if (tok.type == TokenType::EndOfCell)
       return lhs;
-    return std::move(lhs) + " " + tok.literal;
+    return lhs + " " + tok.literal;
   };
   const auto begin = tokens.cbegin() + static_cast<long>(start_idx + 1);
   const auto end = tokens.cend();
