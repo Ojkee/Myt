@@ -10,9 +10,9 @@
 - [ ] Connect to ui
     - [x] Working interpreter 
     - [ ] Scrolling should update value positions
-    - [ ] Cells interactions and updates
+    - [x] Cells interactions and updates
         - [x] Dependencies
-        - [ ] Cycle detection
+        - [x] Cycle detection
 
 ## Extra
 - [ ] Refactor reapeated algorithms to Utlis
@@ -25,6 +25,6 @@
 ```
 Lambda(x y => Sqrt(x) * y) 
 
-Apply([Lambda Cell], )
+Apply([Lambda Cell], [Range if multiple params/Cell])
 ```
 

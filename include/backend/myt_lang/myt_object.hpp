@@ -39,7 +39,7 @@ class ErrorObject : public MytObject {
   explicit ErrorObject(const std::string& value) : m_value(value) {};
 
   [[nodiscard]] auto to_string() const noexcept -> const std::string override {
-    return "Error: `" + m_value + "`";
+    return "Error: " + m_value;
   };
 
   auto add([[maybe_unused]] MytObjectPtr other) const noexcept

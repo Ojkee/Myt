@@ -20,7 +20,7 @@ Rectangle {
   MouseArea {
     anchors.fill: parent
     onClicked: {
-      isEditing = isFirstRow || isFirstCol ? false : true
+      isEditing = !(isFirstRow || isFirstCol)
     }
   }
 
@@ -34,13 +34,17 @@ Rectangle {
         return windowUtils.col_idx_to_letter(col)
       if (isFirstCol)
         return row
-      if (label === "")
+      if (label === "" || label === "\"\"")
         return windowUtils.col_idx_to_letter(col) + "" + row;
       return label
     }
-    color: (isFirstCol || isFirstRow || label !== "") ? 
-      "#FFF8E7" :
-      "#777" 
+    color: {
+      if (text === "Nil")
+        return "#F66";
+      else if (isFirstCol || isFirstRow || label !== "" && label !== "\"\"") 
+        return "#FFF8E7";
+      return "#777" ;
+    }
     font.pixelSize: 16
   }
 
@@ -54,28 +58,36 @@ Rectangle {
     selectByMouse: true
     cursorVisible: true
 
-    onEditingFinished: {
-      if (text !== "") {
+    function finishEdit(){
+      if (text !== "" || (text === "" && label != "")) {
         windowState.eval_save(text, col, row)
         label = windowState.get_content_by_pos(col, row)
       }
       isEditing = false
+    }
+
+    onEditingFinished: {
+      finishEdit()
     }
 
     Keys.onReturnPressed: {
-      if (text !== "") {
-        windowState.eval_save(text, col, row)
-        label = windowState.get_content_by_pos(col, row)
-      }
-      isEditing = false
+      finishEdit()
     }
 
     Keys.onEscapePressed: {
-      if (text !== "") {
-        windowState.eval_save(text, col, row)
-        label = windowState.get_content_by_pos(col, row)
-      }
-      isEditing = false
+      finishEdit()
+    }
+  }
+
+  onColChanged: updateLabel()
+  onRowChanged: updateLabel()
+
+  function updateLabel() {
+    const content = windowState.get_content_by_pos(col, row)
+    if (content !== "") {
+      label = content
+    } else {
+      label = ""
     }
   }
 }
