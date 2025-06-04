@@ -11,15 +11,23 @@ class GlobalUtils {
   template <typename T,
             typename = typename std::enable_if_t<std::is_unsigned_v<T>>>
   [[nodiscard]] static auto col_idx_to_letter_str(const T& n) noexcept
-      -> const std::string;
+      -> const std::string {
+    std::string acc = "";
+    for (T i = n; i > 0; i /= 26) {
+      i -= 1;
+      acc = (char)((i % 26) + 'A') + acc;
+    }
+    return acc;
+  }
 
-  [[nodiscard]] static auto pos_to_str(const CellPos& pos) noexcept
-      -> const std::string;
-
-  [[nodiscard]] static auto is_in_cell_range(const int& idx) noexcept -> bool;
+  template <typename T,
+            typename = typename std::enable_if_t<std::is_integral_v<T>>>
+  [[nodiscard]] static auto is_in_cell_range(const T& idx) noexcept -> bool {
+    return idx > 0 && static_cast<CellLimitType>(idx) < CELL_MAX_LIMIT;
+  }
 
   // CONSTS
-  static const CellLimitType max_limit =
+  static const CellLimitType CELL_MAX_LIMIT =
       std::numeric_limits<CellLimitType>::max();
 };
 

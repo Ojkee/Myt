@@ -15,7 +15,7 @@
         - [x] Cycle detection
 
 ## Extras
-- [ ] Enter and Tab keys selects to down and to right cell respectively
+- [x] Enter and Tab keys selects to down and to right cell respectively
 - [x] Refactor reapeated algorithms to Utlis
 - [ ] Drag&Drop csv files
 - [ ] Auto resize number of rows and cols 
@@ -31,3 +31,5 @@ Apply([Lambda Cell], [Range if multiple params/Cell])
 
 ## Bugs
 - [ ] First selections doesn't unselect cells in UI
+- [ ] Too big number limit / string arithmetics
+

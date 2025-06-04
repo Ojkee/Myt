@@ -8,7 +8,6 @@
 #include "backend/cell_dependencies_handler.hpp"
 #include "backend/myt_lang/cell_pos.hpp"
 #include "backend/state.hpp"
-#include "global_utils/global_utils.hpp"
 
 using Dependencies = DependenciesHandler::Dependencies;
 
@@ -18,9 +17,9 @@ struct StringMaker<Dependencies> {
   static std::string convert(Dependencies const& value) {
     std::string acc{""};
     for (const auto& [pos, affected] : value) {
-      auto line = "\t" + GlobalUtils::pos_to_str(pos) + ": ";
+      auto line = "\t" + pos.to_string() + ": ";
       for (const auto& affected_pos : affected) {
-        line += GlobalUtils::pos_to_str(affected_pos) + " ";
+        line += affected_pos.to_string() + " ";
       }
       acc += line + "\n";
     }

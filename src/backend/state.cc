@@ -133,7 +133,7 @@ auto State::build_cell_pos_str(const Container& c) -> std::string {
   std::string res{""};
   std::size_t i{0};
   for (const auto& pos : c) {
-    res += GlobalUtils::pos_to_str(pos);
+    res += pos.to_string();
     if (i < c.size() - 1) {
       res += ", ";
     }

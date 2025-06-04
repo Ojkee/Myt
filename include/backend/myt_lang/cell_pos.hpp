@@ -10,7 +10,6 @@
 #include <limits>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 using CellLimitType = uint16_t;
 
@@ -60,16 +59,9 @@ struct CellPos {
     return (*this < other) || (*this == other);
   }
 
+  [[nodiscard]] auto to_string() const noexcept -> const std::string;
+
  private:
-  static const CellLimitType max_limit =
-      std::numeric_limits<CellLimitType>::max();
-  template <typename UnsignedType,
-            typename =
-                typename std::enable_if<std::is_unsigned_v<UnsignedType>>::type>
-  [[nodiscard]] constexpr static auto in_limit_range(
-      const UnsignedType& num) noexcept -> bool {
-    return num <= max_limit;
-  }
   [[nodiscard]] auto convert_letters(const std::string_view& valid_format_str,
                                      const std::string_view& letters) const
       -> CellLimitType;

@@ -86,14 +86,15 @@ auto Parser::concat_token_literals(const std::size_t& start_idx,
       (tokens.size() == 1 && tokens[0].type == TokenType::EndOfCell)) {
     return "";
   }
-  auto concat_space_fold = [](const std::string& lhs, const Token& tok) {
+  const auto concat_space_fold = [](const std::string& lhs, const Token& tok) {
     if (tok.type == TokenType::EndOfCell)
       return lhs;
     return std::move(lhs) + " " + tok.literal;
   };
-  auto begin = tokens.begin() + static_cast<long>(start_idx + 1);
-  return std::accumulate(begin, tokens.end(), tokens[start_idx].literal,
-                         concat_space_fold);
+  const auto begin = tokens.cbegin() + static_cast<long>(start_idx + 1);
+  const auto end = tokens.cend();
+  const auto first_token = tokens.at(start_idx).literal;
+  return std::accumulate(begin, end, first_token, concat_space_fold);
 }
 
 auto Parser::is_precendence_higher(const std::size_t& token_idx,
