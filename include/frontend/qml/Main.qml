@@ -29,15 +29,27 @@ ApplicationWindow {
       windowState.editingCol += dc
       windowState.editingRow += dr
 
-      if (c >= colOffset - 2 + colCount && dc > 0)     // RIGHT
+      var padSize = 3
+      if (c >= colOffset - padSize + colCount && dc > 0)           // RIGHT
         gridView.colOffset += dc
-      else if (c > 2 && c <= colOffset + 2 && dc < 0)  // LEFT
+      else if (c > padSize && c <= colOffset + padSize && dc < 0)  // LEFT
         gridView.colOffset += dc
 
-      if (r >= rowOffset - 2 + rowCount && dr > 0)     // DOWN
+      if (r >= rowOffset - padSize + rowCount && dr > 0)           // DOWN
         gridView.rowOffset += dr
-      else if (r > 2 && r <= rowOffset + 2 && dr < 0)  // UP
+      else if (r > padSize && r <= rowOffset + padSize && dr < 0)  // UP
         gridView.rowOffset += dr
+
+      updateVisibleCells()
+    }
+
+    function updateVisibleCells() {
+      for (let i = 0; i < gridView.count; ++i) {
+        const item = gridView.itemAtIndex(i)
+        if (item && item.updateLabel) {
+          item.updateLabel()
+        }
+      }
     }
 
     delegate: Cell {
@@ -45,8 +57,6 @@ ApplicationWindow {
       height: gridView.cellHeight
       colIdx: index % gridView.colCount
       rowIdx: Math.floor(index / gridView.colCount)
-      col: colIdx + gridView.colOffset
-      row: rowIdx + gridView.rowOffset
       onMoveRequested: (c, r, dc, dr) => {
         gridView.moveCells(c, r, dc, dr)
       }

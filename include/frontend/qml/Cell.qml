@@ -5,8 +5,8 @@ import QtQuick.Layouts
 Rectangle {
   property int colIdx
   property int rowIdx
-  property int col: 0
-  property int row: 0
+  readonly property int col: colIdx + gridView.colOffset
+  readonly property int row: rowIdx + gridView.rowOffset
   property bool isFirstCol: colIdx === 0
   property bool isFirstRow: rowIdx === 0
   property string label: ""
@@ -68,42 +68,38 @@ Rectangle {
         windowState.eval_save(text, col, row)
         label = windowState.get_content_by_pos(col, row)
       }
-      windowState.editingCol = -1
-      windowState.editingRow = -1
     }
 
     onEditingFinished: {
       finishEdit()
+      windowState.editingCol = -1
+      windowState.editingRow = -1
     }
 
     Keys.onEscapePressed: {
       finishEdit()
+      windowState.editingCol = -1
+      windowState.editingRow = -1
     }
 
     Keys.onPressed: (event) => {
         if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right) {
             moveRequested(col, row, 1, 0)
-            keyNavigationEvent(col + 1, row)
+            finishEdit()
             event.accepted = true
         } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Down) {
             moveRequested(col, row, 0, 1)
-            keyNavigationEvent(col, row+1)
+            finishEdit()
             event.accepted = true
         } else if (event.key === Qt.Key_Left) {
             moveRequested(col, row, -1, 0)
-            keyNavigationEvent(col-1, row)
+            finishEdit()
             event.accepted = true
         } else if (event.key === Qt.Key_Up) {
             moveRequested(col, row, 0, -1)
-            keyNavigationEvent(col, row-1)
+            finishEdit()
             event.accepted = true
         }
-    }
-
-    function keyNavigationEvent(newCol, newRow) {
-        finishEdit()
-        // windowState.editingCol = newCol
-        // windowState.editingRow = newRow
     }
   }
 
